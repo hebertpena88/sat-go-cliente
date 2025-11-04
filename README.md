@@ -39,6 +39,9 @@ https://raw.githubusercontent.com/hebertpena88/sat-go-cliente/main/postman/Sat-G
 4. Confirma con **Import**.  
 Verás la colección como **“Sat-Go-Clientes”**.
 
+<img width="1308" height="783" alt="image" src="https://github.com/user-attachments/assets/3ea833af-a4f9-4d33-b393-1b2902e74aca" />
+
+
 ## ⚙️ Configurar variables
 
 La colección usa **variables de colección** para manejar tokens dinámicamente:
