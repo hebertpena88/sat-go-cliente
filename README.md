@@ -22,7 +22,7 @@ Esta colección contiene los endpoints para **crear tu KEY**, **obtener tokens**
 
 ## ✅ Requisitos
 
-- Tener instalada la aplicación **Postman** (desktop o web).
+- Tener instalada la aplicación **Postman** (desktop).
 - Contar con una cuenta en **SAT-GO** y un **token temporal** obtenido desde  
   👉 [https://web.sat-go.com/consultar](https://web.sat-go.com/consultar).
 
@@ -30,7 +30,7 @@ Esta colección contiene los endpoints para **crear tu KEY**, **obtener tokens**
 
 ## 🚀 Importar la colección
 
-### Opción A: desde un enlace (recomendado)
+### Desde un enlace
 
 1. Abre **Postman**.
 2. Haz clic en **Import** → pestaña **Link**.
@@ -51,6 +51,8 @@ La colección usa **variables de colección** para manejar tokens dinámicamente
 ### Cómo configurarlas
 
 1. En Postman, abre la colección **Sat-Go-Clientes** → pestaña **Variables**.
+<img width="1805" height="664" alt="image" src="https://github.com/user-attachments/assets/7e9c393a-d735-4589-8125-531698cfbe23" />
+
 2. En la columna **Current Value**, coloca:
 - `tokenCliente` → tu token temporal.
 - `KeyValue` → déjalo vacío (Postman lo llenará automáticamente).
@@ -58,20 +60,10 @@ La colección usa **variables de colección** para manejar tokens dinámicamente
 > ⚠️ El request **“Paso 1 → Crear Llave”** utiliza `Bearer {{tokenCliente}}` y al ejecutarse guarda automáticamente el valor `KeyValue` en las variables de la colección.
 
 ---
+**IMPORTANTE:**
 
-## 🧭 Primeros pasos (flow recomendado)
-
-1. **Coloca tu `tokenCliente`.**  
-- Ve a la pestaña **Variables** de la colección y agrega tu token en `tokenCliente`.
-
-2. **Ejecuta “Paso 1 → Crear Llave”.**  
-- Endpoint: `POST https://api.sat-go.com/api/v1/Users/Createkey`
-- Header: `Authorization: Bearer {{tokenCliente}}`
-- Respuesta esperada: código **200 OK** con un JSON que contiene el campo `key`.
-- Postman guardará automáticamente `KeyValue` con el valor devuelto.
-
-3. **Usa la KEY generada.**  
-- Los siguientes endpoints de la colección utilizan la variable `{{KeyValue}}` como tu clave de autenticación para generar tokens y acceder a los servicios SAT-GO.
+Dentro de la colección cada carpeta contiene información precisa de como utilizar cada endpoint, parámetros y como  consumirlo:
+<img width="391" height="396" alt="image" src="https://github.com/user-attachments/assets/7f4cde76-11c1-4fb2-8277-b6ec4c0ccae9" />
 
 ---
 
