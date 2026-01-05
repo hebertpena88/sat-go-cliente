@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "94b05f58-a85e-4e7f-91f3-fe1a159a649a",
+		"_postman_id": "b24cc729-ddf9-453e-809c-03152ac11dbe",
 		"name": "Sat-Go-Clientes",
 		"description": "Hola!, muchas gracias por descargar esta colección para utilizar nuestra API SAT-GO, aquí encontrarás todo lo necesario para conectarte a nuestros servicios, desde crear tu KEY, tokens y hasta descargar comprobantes, constancias y opiniones. Si tienes alguna duda o comentario no dudes en enviarnos un mensaje por whatsapp al +52 998 195 7130 y con gusto te atenderemos para resolver cualquier tema.\n\nPara poder consumir los servicios de SAT-GO es indispensable tener al menos los siguientes pasos:\n\n- Estar registrado en [<i>https://web.sat-go.com</i>](https://web.sat-go.com)\n    \n- Haber ejecutado el **paso 1** para crear tu llave\n    \n- Obtener un token con la llave creada en el **paso 1**\n    \n\nUna vez que tengas tu llave y tu token puedes utilizar todos nuestros endpoints que están del lado izquierdo de la colección.\n\n**IMPORTANTE**: Cada folder de esta colección contiene instrucciones de ayuda para que puedas consumir de forma correcta nuestra API.\n\nMuchas gracias por tu confianza y recuerda que estamos a tus órdenes.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -495,7 +495,7 @@
 							]
 						},
 						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/facfiel?tipoBusqueda=1&estatusFactura=-1&fecha_inicial=2025-01-01 00:00:00&fecha_final=2025-01-07 23:59:59&tipo=recibidos&solicitaMetadata=false&descargaComprobantes=false",
+							"raw": "https://api.sat-go.com/api/v2/Consultar/facfiel?tipoBusqueda=1&estatusFactura=-1&requestId=eb7bba2a-26b2-4599-830e-445682ed2b4b&fecha_inicial=2025-01-01 00:00:00&fecha_final=2025-01-07 23:59:59&tipo=recibidos&solicitaMetadata=false&descargaComprobantes=true",
 							"protocol": "https",
 							"host": [
 								"api",
@@ -512,7 +512,7 @@
 								{
 									"key": "tipoBusqueda",
 									"value": "1",
-									"description": "Busqueda por fecha"
+									"description": "Fecha 1 , UUID 0"
 								},
 								{
 									"key": "estatusFactura",
@@ -521,9 +521,8 @@
 								},
 								{
 									"key": "requestId",
-									"value": "0095d882-ac3a-4121-87a3-84f76c35df4a",
-									"description": "No debe ir cuando es la primera petición, este valor lo obtienes cuando realizas una descarga, este valor representa la sesión con el SAT y debe ser usado en peticiones subsecuentes.",
-									"disabled": true
+									"value": "eb7bba2a-26b2-4599-830e-445682ed2b4b",
+									"description": "No debe ir cuando es la primera petición, este valor lo obtienes cuando realizas una descarga, este valor representa la sesión con el SAT y debe ser usado en peticiones subsecuentes."
 								},
 								{
 									"key": "fecha_inicial",
@@ -546,7 +545,12 @@
 								},
 								{
 									"key": "descargaComprobantes",
-									"value": "false"
+									"value": "true"
+								},
+								{
+									"key": "uuid",
+									"value": "7EB73EF9-1232-4A5E-AF5F-2B52D6C963F8",
+									"disabled": true
 								}
 							]
 						},
@@ -1362,6 +1366,107 @@
 				}
 			],
 			"description": "Para poder descargar tus comunicados del SAT primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar ttus notificaciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Comunicados**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente** con la contraseña de la llave privada.\n        \n\n<img src=\"https://content.pstmn.io/391bb62b-c6c8-424b-ac54-b8e6a0aa2212/aW1hZ2UucG5n\" alt=\"\" height=\"793\" width=\"1756\">"
+		},
+		{
+			"name": "Obtener EFOS",
+			"item": [
+				{
+					"name": "Obtener EFOS",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true,
+						"disabledSystemHeaders": {}
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{tokenCliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"disabled": true
+							},
+							{
+								"key": "RFC",
+								"value": "{{RFCCliente}}",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "mul",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "llavePrivada",
+									"description": "llave privada",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "Certificado",
+									"description": "certificado",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "Contrasena",
+									"value": "{{PassFielCliente}}",
+									"description": "Password de la fiel",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "https://api.sat-go.com/api/v2/Efos/PESH8805072Q5",
+							"protocol": "https",
+							"host": [
+								"api",
+								"sat-go",
+								"com"
+							],
+							"path": [
+								"api",
+								"v2",
+								"Efos",
+								"PESH8805072Q5"
+							]
+						},
+						"description": "Get CSF using the stored captcha"
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [
