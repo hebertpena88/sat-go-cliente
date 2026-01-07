@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "b24cc729-ddf9-453e-809c-03152ac11dbe",
+		"_postman_id": "26c193df-d12e-40ea-93ff-ff152f1ce718",
 		"name": "Sat-Go-Clientes",
 		"description": "Hola!, muchas gracias por descargar esta colección para utilizar nuestra API SAT-GO, aquí encontrarás todo lo necesario para conectarte a nuestros servicios, desde crear tu KEY, tokens y hasta descargar comprobantes, constancias y opiniones. Si tienes alguna duda o comentario no dudes en enviarnos un mensaje por whatsapp al +52 998 195 7130 y con gusto te atenderemos para resolver cualquier tema.\n\nPara poder consumir los servicios de SAT-GO es indispensable tener al menos los siguientes pasos:\n\n- Estar registrado en [<i>https://web.sat-go.com</i>](https://web.sat-go.com)\n    \n- Haber ejecutado el **paso 1** para crear tu llave\n    \n- Obtener un token con la llave creada en el **paso 1**\n    \n\nUna vez que tengas tu llave y tu token puedes utilizar todos nuestros endpoints que están del lado izquierdo de la colección.\n\n**IMPORTANTE**: Cada folder de esta colección contiene instrucciones de ayuda para que puedas consumir de forma correcta nuestra API.\n\nMuchas gracias por tu confianza y recuerda que estamos a tus órdenes.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -1448,7 +1448,7 @@
 							]
 						},
 						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Efos/PESH8805072Q5",
+							"raw": "https://api.sat-go.com/api/v2/Efos/rfc/BIS1010014B0",
 							"protocol": "https",
 							"host": [
 								"api",
@@ -1459,7 +1459,8 @@
 								"api",
 								"v2",
 								"Efos",
-								"PESH8805072Q5"
+								"rfc",
+								"BIS1010014B0"
 							]
 						},
 						"description": "Get CSF using the stored captcha"
