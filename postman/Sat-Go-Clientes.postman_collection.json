@@ -1,1540 +1,1803 @@
 {
-	"info": {
-		"_postman_id": "26c193df-d12e-40ea-93ff-ff152f1ce718",
-		"name": "Sat-Go-Clientes",
-		"description": "Hola!, muchas gracias por descargar esta colección para utilizar nuestra API SAT-GO, aquí encontrarás todo lo necesario para conectarte a nuestros servicios, desde crear tu KEY, tokens y hasta descargar comprobantes, constancias y opiniones. Si tienes alguna duda o comentario no dudes en enviarnos un mensaje por whatsapp al +52 998 195 7130 y con gusto te atenderemos para resolver cualquier tema.\n\nPara poder consumir los servicios de SAT-GO es indispensable tener al menos los siguientes pasos:\n\n- Estar registrado en [<i>https://web.sat-go.com</i>](https://web.sat-go.com)\n    \n- Haber ejecutado el **paso 1** para crear tu llave\n    \n- Obtener un token con la llave creada en el **paso 1**\n    \n\nUna vez que tengas tu llave y tu token puedes utilizar todos nuestros endpoints que están del lado izquierdo de la colección.\n\n**IMPORTANTE**: Cada folder de esta colección contiene instrucciones de ayuda para que puedas consumir de forma correcta nuestra API.\n\nMuchas gracias por tu confianza y recuerda que estamos a tus órdenes.",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "366816"
-	},
-	"item": [
-		{
-			"name": "Paso 1",
-			"item": [
-				{
-					"name": "Crear Llave",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Store the captcha response in a variable",
-									"var jsonData = pm.response.json();",
-									"pm.collectionVariables.set(\"KeyValue\", jsonData.key);",
-									"console.log(\"Llave Obtenida: \" + jsonData.key);"
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "https://api.sat-go.com/api/v1/Users/Createkey",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v1",
-								"Users",
-								"Createkey"
-							]
-						},
-						"description": "Get a new captcha from the SAT API"
-					},
-					"response": []
-				}
-			],
-			"description": "El primer paso es obtener tu llave para esto debes ir a [https://web.sat-go.com/consultar](https://web.sat-go.com/consultar) y copiar tu token temporal, este servirá para poder generar tu **KEY**, esta no tiene vigencia y te servirá para generar **tokens** dinámicos. Es importante mencionar que este paso lo debes hacer solo 1 vez y guardar tu token.\n\n<img src=\"https://content.pstmn.io/bd5b9b5e-18e6-4f0c-ba58-e15b22a56258/aW1hZ2UucG5n\" width=\"533\" height=\"238\">\n\nUna vez que tienes tu token, debes ingresar en el request **Crear Llave** aqui en **postman**, dar click en **Authorization**, actualizar la variable **tokenCliente** con el token que obtuviste en el portal y dar click en el botón **Send,** esto generará una llave que servirá para generar tokens dinámicos, este valor de la **KEY** se guarda en una variable aquí en **POSTMAN** , algo importante que mencionar, esta llave debes guardarla para poder automatizar, ya que con ella podrás generar tokens dinámicos con los cuales podrás consumir nuestra API.\n\n<img src=\"https://content.pstmn.io/17670642-9395-405e-a2fc-41c6028fadd0/aW1hZ2UucG5n\" alt=\"\" height=\"637\" width=\"1740\">"
-		},
-		{
-			"name": "Genera Token",
-			"item": [
-				{
-					"name": "Obtener Token",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Store the captcha response in a variable",
-									"var jsonData = pm.response.json();",
-									"",
-									"// Store the captcha data in collection variables",
-									"pm.collectionVariables.set(\"tokenCliente\", jsonData.tokens.access.value);",
-									"",
-									"",
-									"// Log the stored captcha ID for verification",
-									"console.log(\"Stored Token: \" + jsonData.tokens.access.value);",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"key\":\"{{KeyValue}}\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/Auth/token-json",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"Auth",
-								"token-json"
-							]
-						},
-						"description": "Get a new captcha from the SAT API"
-					},
-					"response": []
-				}
-			],
-			"description": "Para poder generar un token dinámico, el requisito es haber ejecutado de forma correcta el **Paso 1 ,** una vez ejecutado, da click en _**Genera Token / Obtener Token**_ _y presiona el botón_ _**Send**____, como el valor de la_ _**KEY**_ _ya está almacenada en una variable, en automático deberá desplegarte un_ _**token**_ _como se muestra en la imagen siguiente:_\n\n<img src=\"https://content.pstmn.io/3d0f0e7b-ec1b-4455-b8d5-48e2779cf516/aW1hZ2UucG5n\" width=\"1375\" height=\"835\">"
-		},
-		{
-			"name": "Descarga Constancia de Situacion Fiscal",
-			"item": [
-				{
-					"name": "Obtener CSF CIEC",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true,
-						"disabledSystemHeaders": {
-							"content-type": true
-						}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Secret",
-								"value": "{{CIecCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/csf",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"csf"
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				},
-				{
-					"name": "Obtener CSF Fiel",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "mul",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "llavePrivada",
-									"description": "llave privada",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Certificado",
-									"description": "certificado",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Contrasena",
-									"value": "{{PassFielCliente}}",
-									"description": "Password de la fiel",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/csffiel",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"csffiel"
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				}
-			],
-			"description": "Para poder descargar tu CSF primero debiste haber ejecutado el _**Paso 1**_ de esta colección, cuando hayas ejecutado correctamente el **Paso 1**, ya estás listo para descargar tu CSF, puedes hacerlo de 2 formas diferentes, la primera es utilizando tu CIEC, para esto debes ir al request **Obtener CSF CIEC,** dar click en Headers y actualizar la variable **RFCCliente y CIecCliente,** una vez que hayas actualizado las variables puedes dar click en el botón **Send**\n\n<img src=\"https://content.pstmn.io/7311de08-ba10-4b2b-a52b-0d54d616ac05/aW1hZ2UucG5n\" width=\"1741\" height=\"642\">\n\nLa segunda opción es mediante la FIEL, aquí de igual forma debes ejecutar correctamente el **Paso 1,** una vez que está ejecutado, debes dar click en **Obtener CSF Fiel**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en **body** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente**"
-		},
-		{
-			"name": "Descarga de Comprobantes",
-			"item": [
-				{
-					"name": "Obtener Comprobantes CIEC",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true,
-						"disabledSystemHeaders": {
-							"content-type": true
-						}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Secret",
-								"value": "{{CIecCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/fac?tipo=recibidos&tipoBusqueda=1&estatusFactura=-1&mes=1&anio=2025",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"fac"
-							],
-							"query": [
-								{
-									"key": "tipo",
-									"value": "recibidos"
-								},
-								{
-									"key": "tipoBusqueda",
-									"value": "1",
-									"description": "Búsqueda por fecha"
-								},
-								{
-									"key": "estatusFactura",
-									"value": "-1",
-									"description": "-1 - Todos y 1 Vigentes"
-								},
-								{
-									"key": "requestId",
-									"value": "fe956326-acb6-4048-8467-241b29f7f6e6",
-									"description": "No debe ir cuando es la primera petición, este valor lo obtienes cuando realizas una descarga, este valor representa la sesión con el SAT y debe ser usado en peticiones subsecuentes.",
-									"disabled": true
-								},
-								{
-									"key": "mes",
-									"value": "1",
-									"description": "Mes 1-12"
-								},
-								{
-									"key": "anio",
-									"value": "2025",
-									"description": "Año"
-								}
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				},
-				{
-					"name": "Obtener Comprobantes FIEL",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "mul",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "llavePrivada",
-									"description": "llave privada",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Certificado",
-									"description": "certificado",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Contrasena",
-									"value": "{{PassFielCliente}}",
-									"description": "Password de la fiel",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/facfiel?tipoBusqueda=1&estatusFactura=-1&requestId=eb7bba2a-26b2-4599-830e-445682ed2b4b&fecha_inicial=2025-01-01 00:00:00&fecha_final=2025-01-07 23:59:59&tipo=recibidos&solicitaMetadata=false&descargaComprobantes=true",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"facfiel"
-							],
-							"query": [
-								{
-									"key": "tipoBusqueda",
-									"value": "1",
-									"description": "Fecha 1 , UUID 0"
-								},
-								{
-									"key": "estatusFactura",
-									"value": "-1",
-									"description": "-1 - Todos y 1 Vigentes"
-								},
-								{
-									"key": "requestId",
-									"value": "eb7bba2a-26b2-4599-830e-445682ed2b4b",
-									"description": "No debe ir cuando es la primera petición, este valor lo obtienes cuando realizas una descarga, este valor representa la sesión con el SAT y debe ser usado en peticiones subsecuentes."
-								},
-								{
-									"key": "fecha_inicial",
-									"value": "2025-01-01 00:00:00",
-									"description": "Fecha inicial de búsqueda"
-								},
-								{
-									"key": "fecha_final",
-									"value": "2025-01-07 23:59:59",
-									"description": "Fecha final de búsqueda"
-								},
-								{
-									"key": "tipo",
-									"value": "recibidos",
-									"description": "emitidos o recibidos"
-								},
-								{
-									"key": "solicitaMetadata",
-									"value": "false"
-								},
-								{
-									"key": "descargaComprobantes",
-									"value": "true"
-								},
-								{
-									"key": "uuid",
-									"value": "7EB73EF9-1232-4A5E-AF5F-2B52D6C963F8",
-									"disabled": true
-								}
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				},
-				{
-					"name": "Obtener Metadata Fiel",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "mul",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "llavePrivada",
-									"description": "llave privada",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Certificado",
-									"description": "certificado",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Contrasena",
-									"value": "{{PassFielCliente}}",
-									"description": "Password de la fiel",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/descargametadatafiel?folioDescarga=A66605B6-0B28-41B8-9E6F-8D150BBE30A8",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"descargametadatafiel"
-							],
-							"query": [
-								{
-									"key": "anio",
-									"value": "2025",
-									"disabled": true
-								},
-								{
-									"key": "mes",
-									"value": "2",
-									"disabled": true
-								},
-								{
-									"key": "requestId",
-									"value": "fafacc1e-4c85-424f-b72d-291552001189",
-									"disabled": true
-								},
-								{
-									"key": "folioDescarga",
-									"value": "A66605B6-0B28-41B8-9E6F-8D150BBE30A8"
-								}
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				}
-			],
-			"description": "Para poder descargar tus comprobantes primero debiste haber ejecutado el **Genera Token** de esta colección, cuando hayas ejecutado correctamente el **Genera Token** ya estás listo para descargar tus comprobantes, puedes hacerlo de 2 formas diferentes, la primera es utilizando tu CIEC, para esto debes ir al request **Obtener Comprobantes CIEC,** dar click en **Headers** y actualizar la variable **RFCCliente y CIecCliente,** una vez que hayas actualizado las variables puedes dar click en el botón **Send**\n\n<img src=\"https://content.pstmn.io/871f7e08-72f4-4336-99e6-806c8605c9f1/aW1hZ2UucG5n\" width=\"1221\" height=\"458\">\n\nLa segunda opción es mediante la FIEL, aquí de igual forma debes ejecutar correctamente el **Paso 1,** una vez que está ejecutado, debes dar click en **Obtener Comprobantes Fiel**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en **body** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente**\n\n<img src=\"https://content.pstmn.io/151b2a0c-80ad-4c28-9406-cd28c0f28ea4/aW1hZ2UucG5n\" width=\"1736\" height=\"612\">\n\nParámetros que reciben:\n\n- CIEC\n    \n    - **tipo:** recibidos o emitidos\n        \n    - **tipoBusqueda: 1 (busqueda por fecha)**\n        \n    - **estatusFactura**: -1 (Todos) 1 (Vigentes\n        \n    - **mes**: 1-12\n        \n    - **anio**: Año de la búsqueda\n        \n    - **requestId**: Es un valor que se obtiene despues de la primer llamada del SAT, este **requestId** representa una sesión con el SAT, es como si fuera la representación de una cookie de sesión con el SAT, la podrás obtener como en la siguiente imagen:\n        \n\n<img src=\"https://content.pstmn.io/b498cfa4-2b9a-4c70-9b94-73d8995036cd/aW1hZ2UucG5n\" alt=\"Ejemplo%20de%20respuesta%20exitosa%20de%20descarga%20de%20comprobantes\" width=\"355\" height=\"176\">\n\n<img src=\"https://content.pstmn.io/0c056dfa-3185-4d0c-9f75-f5dd89fc8bc4/aW1hZ2UucG5n\" alt=\"Ejemplo%20de%20como%20se%20envian%20los%20parámetros\" width=\"1387\" height=\"448\">"
-		},
-		{
-			"name": "Descarga de Opinion de Cumplimiento",
-			"item": [
-				{
-					"name": "Obtener Opinión CIEC",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true,
-						"disabledSystemHeaders": {
-							"content-type": true
-						}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Secret",
-								"value": "{{CIecCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/oc",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"oc"
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				},
-				{
-					"name": "Obtener Opinión FIEL",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "mul",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "llavePrivada",
-									"description": "llave privada",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Certificado",
-									"description": "certificado",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Contrasena",
-									"value": "{{PassFielCliente}}",
-									"description": "Password de la fiel",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/ocfiel",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"ocfiel"
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				}
-			],
-			"description": "Esta carpeta contiene endpoints para obtener la Opinión de Cumplimiento del SAT utilizando dos métodos de autenticación. Es importante mencionar que debes haber ejecutado **Genera Token / Obtener Token** para que puedas utilizar la descarga de opinión de cumplimiento.\n\nEndpoints incluidos:\n\n- Obtener Opinión CIEC: Realiza una consulta usando las credenciales CIEC previamente almacenadas.\n    \n- Obtener Opinión FIEL: Realiza una consulta usando la FIEL previamente almacenada.\n    \n\nVariables necesarias (collección):\n\n- RFCliente\n    \n- CIecCliente (Cuando se utiliza la descarga por CIEC)\n    \n- PassFielCliente (Cuando se utiliza la descarga por FIEL\n    \n\nInstrucciones de uso:\n\n1. Para descarga por medio de CIEC, ingresa a **Obtener Opinión CIEC** da click en **Headers** y actualiza las variables **RFCCliente y CIecCliente,** posteriormente da click en el botón **SEND**\n    \n\n<img src=\"https://content.pstmn.io/e4e5bb81-76ca-41be-bdbb-c722c589f9d7/aW1hZ2UucG5n\" width=\"1204\" height=\"587\">\n\n2\\. Para descarga por medio de FIEL, ingresa a **Obtener Opinión FIEL** da click en **Headers** y actualiza la variable **RFCCliente,** posteriormente da click en **Body** y agrega en el parámetro **llavePrivada** tu archivo .key, en el parámetro **Certificado** agrega tu archivo .cer de la FIEL y por último actualiza la variable **PassFielCliente** el cual es la contraseña de tu llave privada.\n\n<img src=\"https://content.pstmn.io/4d09f381-2f60-4cef-aa17-e4f0e2516cdf/aW1hZ2UucG5n\" alt=\"\" height=\"687\" width=\"1240\">"
-		},
-		{
-			"name": "Descarga Declaraciones",
-			"item": [
-				{
-					"name": "Obtener Declaraciones CIEC",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true,
-						"disabledSystemHeaders": {
-							"content-type": true
-						}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Secret",
-								"value": "{{CIecCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/dec?ejercicio=2025&mes=4",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"dec"
-							],
-							"query": [
-								{
-									"key": "ejercicio",
-									"value": "2025"
-								},
-								{
-									"key": "mes",
-									"value": "4"
-								},
-								{
-									"key": "requestId",
-									"value": "0cec56ff-c625-48bf-bf7e-510cc160a744",
-									"disabled": true
-								}
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				},
-				{
-					"name": "Obtener Declaraciones FIEL",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFC}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "mul",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "llavePrivada",
-									"description": "llave privada",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Certificado",
-									"description": "certificado",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Contrasena",
-									"value": "{{PassFielCliente}}",
-									"description": "Password de la fiel",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/decfiel?ejercicio=2025&mes=2",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"decfiel"
-							],
-							"query": [
-								{
-									"key": "ejercicio",
-									"value": "2025"
-								},
-								{
-									"key": "mes",
-									"value": "2"
-								},
-								{
-									"key": "requestId",
-									"value": "8d7dfc3e-28d4-4ccb-9e6b-579ff669d6e5",
-									"disabled": true
-								},
-								{
-									"key": "fecha_inicial",
-									"value": "2025-01-01 00:00:00",
-									"disabled": true
-								}
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				}
-			],
-			"description": "Para poder descargar tus declaraciones primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar tus declaraciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando tu CIEC.\n    \n    - para esto debes ir al request **Obtener Declaraciones CIEC,** dar click en **Headers** y actualizar la variable **RFCCliente y CIecCliente,** una vez que hayas actualizado las variables puedes dar click en el botón **Send.**\n        \n\n<img src=\"https://content.pstmn.io/bd7c75f1-4131-4d43-a841-4c86f95f452d/aW1hZ2UucG5n\" width=\"1753\" height=\"563\">\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Declaraciones Fiel**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente**\n        \n\n<img src=\"https://content.pstmn.io/e90e1ed4-9046-4703-8862-5dd195ddbf66/aW1hZ2UucG5n\" width=\"1736\" height=\"682\">\n\nParámetros que reciben los endpoints:\n\n- Para Ciec y FIEL\n    \n    - **ejercicio**: Es el Año del cual quieres consultar\n        \n    - **mes**: Mes del cual quieras consultar 0-12 donde 0 son todos los meses\n        \n    - **requestId**: Es un valor que se obtiene despues de la primer llamada del SAT, este **requestId** representa una sesión con el SAT, es como si fuera la representación de una cookie de sesión con el SAT, después de tu primer llamada la podrás obtener de los encabezados de la respuesta como se muestra en la siguiente imagen:\n        \n\n<img src=\"https://content.pstmn.io/a5c52382-6cdc-460f-a979-4442692485b3/aW1hZ2UucG5n\" width=\"1264\" height=\"392\">\n\nDespués de obtener esté **requestId**, puede enviarlo como parámetro y lo que hará es tomar la sesión actual del SAT para así iniciar sesión nuevamente y que el SAT te pueda bloquear temporalmente."
-		},
-		{
-			"name": "Descarga Opinión IMSS",
-			"item": [
-				{
-					"name": "Obtener Opinión IMSS",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true,
-						"disabledSystemHeaders": {
-							"content-type": true
-						}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": ""
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/imssoc",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"imssoc"
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				}
-			],
-			"description": "Para poder descargar tus declaraciones primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar tus declaraciones, puedes hacerlo de la siguiente manera\n\n- Utilizando tu RFC.\n    \n    - para esto debes ir al request **Obtener Opinión IMSS,** dar click en **Headers** y actualizar la variable **RFCCliente,** una vez que hayas actualizado las variables puedes dar click en el botón **Send.**\n        \n\n<img src=\"https://content.pstmn.io/61de0f14-0196-43e0-8520-fe12d0b1e688/aW1hZ2UucG5n\" alt=\"\" height=\"832\" width=\"1750\">"
-		},
-		{
-			"name": "Obtener Notificaciones",
-			"item": [
-				{
-					"name": "Descarga Notificaciones FIEL",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "mul",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "llavePrivada",
-									"description": "llave privada",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Certificado",
-									"description": "certificado",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Contrasena",
-									"value": "{{PassFielCliente}}",
-									"description": "Password de la fiel",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/notificacionesfiel?tipoNotificacion=notificadas&descargarNotificaciones=true&requestId=d66b5e9e-c4b0-4e0e-b7e6-2370301a042b",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"notificacionesfiel"
-							],
-							"query": [
-								{
-									"key": "tipoNotificacion",
-									"value": "notificadas",
-									"description": "notificadas (Que ya han sido leidas) o pendientes (Que aun no han sido leidas)\n"
-								},
-								{
-									"key": "descargarNotificaciones",
-									"value": "true",
-									"description": "false - No descarga las notificaciones, únicamente verás la información de las notificaciones sin los archivos PDFs en la respuesta.\n"
-								},
-								{
-									"key": "requestId",
-									"value": "d66b5e9e-c4b0-4e0e-b7e6-2370301a042b"
-								}
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				}
-			],
-			"description": "Para poder descargar tus notificaciones del SAT primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar ttus notificaciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Descargar Notificaciones**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente** con la contraseña de la llave privada.\n        \n\n<img src=\"https://content.pstmn.io/6935223c-cecd-4120-8537-467d8036f3a4/aW1hZ2UucG5n\" width=\"1733\" height=\"586\">\n\nParámetros que reciben los endpoints:\n\n- Para FIEL\n    \n    - **tipoNotificacion**: Es el Año del cual quieres consultar\n        \n    - **descargarNotificaciones**: Mes del cual quieras consultar 0-12 donde 0 son todos los meses\n        \n    - **requestId**: Es un valor que se obtiene despues de la primer llamada del SAT, este **requestId** representa una sesión con el SAT, es como si fuera la representación de una cookie de sesión con el SAT, después de tu primer llamada la podrás obtener de los encabezados de la respuesta como se muestra en la siguiente imagen:\n        \n\n<img src=\"https://content.pstmn.io/04646d09-94ef-4f27-a17b-a4b144b7284a/aW1hZ2UucG5n\" width=\"1298\" height=\"696\">\n\nDespués de obtener esté **requestId**, puede enviarlo como parámetro y lo que hará es tomar la sesión actual del SAT para así iniciar sesión nuevamente y que el SAT te pueda bloquear temporalmente."
-		},
-		{
-			"name": "Obtener Comunicados",
-			"item": [
-				{
-					"name": "Obtener Comunicados FIEL",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "mul",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "llavePrivada",
-									"description": "llave privada",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Certificado",
-									"description": "certificado",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Contrasena",
-									"value": "{{PassFielCliente}}",
-									"description": "Password de la fiel",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Consultar/comunicadosfiel",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Consultar",
-								"comunicadosfiel"
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				}
-			],
-			"description": "Para poder descargar tus comunicados del SAT primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar ttus notificaciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Comunicados**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente** con la contraseña de la llave privada.\n        \n\n<img src=\"https://content.pstmn.io/391bb62b-c6c8-424b-ac54-b8e6a0aa2212/aW1hZ2UucG5n\" alt=\"\" height=\"793\" width=\"1756\">"
-		},
-		{
-			"name": "Obtener EFOS",
-			"item": [
-				{
-					"name": "Obtener EFOS",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true,
-						"disabledSystemHeaders": {}
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{tokenCliente}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"disabled": true
-							},
-							{
-								"key": "RFC",
-								"value": "{{RFCCliente}}",
-								"type": "text"
-							},
-							{
-								"key": "Accept",
-								"value": "*/*",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "mul",
-								"type": "text",
-								"disabled": true
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "llavePrivada",
-									"description": "llave privada",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Certificado",
-									"description": "certificado",
-									"type": "file",
-									"src": []
-								},
-								{
-									"key": "Contrasena",
-									"value": "{{PassFielCliente}}",
-									"description": "Password de la fiel",
-									"type": "text"
-								}
-							]
-						},
-						"url": {
-							"raw": "https://api.sat-go.com/api/v2/Efos/rfc/BIS1010014B0",
-							"protocol": "https",
-							"host": [
-								"api",
-								"sat-go",
-								"com"
-							],
-							"path": [
-								"api",
-								"v2",
-								"Efos",
-								"rfc",
-								"BIS1010014B0"
-							]
-						},
-						"description": "Get CSF using the stored captcha"
-					},
-					"response": []
-				}
-			]
-		}
-	],
-	"event": [
-		{
-			"listen": "prerequest",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"requests": {},
-				"exec": [
-					""
-				]
-			}
-		},
-		{
-			"listen": "test",
-			"script": {
-				"type": "text/javascript",
-				"packages": {},
-				"requests": {},
-				"exec": [
-					""
-				]
-			}
-		}
-	],
-	"variable": [
-		{
-			"key": "RFCCliente",
-			"value": ""
-		},
-		{
-			"key": "CIecCliente",
-			"value": ""
-		},
-		{
-			"key": "catpchaValue",
-			"value": ""
-		},
-		{
-			"key": "captchaImage",
-			"value": ""
-		},
-		{
-			"key": "requestId",
-			"value": ""
-		},
-		{
-			"key": "formActionUrl",
-			"value": ""
-		},
-		{
-			"key": "KeyValue",
-			"value": ""
-		},
-		{
-			"key": "token",
-			"value": ""
-		},
-		{
-			"key": "tokenCliente",
-			"value": ""
-		},
-		{
-			"key": "PassFielCliente",
-			"value": "",
-			"type": "default"
-		}
-	]
+  "info": {
+    "_postman_id": "388c80a3-d3ef-49b6-bea1-e9550cdbd883",
+    "name": "Sat-Go-Clientes",
+    "description": "Hola!, muchas gracias por descargar esta colección para utilizar nuestra API SAT-GO, aquí encontrarás todo lo necesario para conectarte a nuestros servicios, desde crear tu KEY, tokens y hasta descargar comprobantes, constancias y opiniones. Si tienes alguna duda o comentario no dudes en enviarnos un mensaje por whatsapp al +52 998 195 7130 y con gusto te atenderemos para resolver cualquier tema.\n\nPara poder consumir los servicios de SAT-GO es indispensable tener al menos los siguientes pasos:\n\n- Estar registrado en [<i>https://web.sat-go.com</i>](https://web.sat-go.com)\n    \n- Haber ejecutado el **paso 1** para crear tu llave\n    \n- Obtener un token con la llave creada en el **paso 1**\n    \n\nUna vez que tengas tu llave y tu token puedes utilizar todos nuestros endpoints que están del lado izquierdo de la colección.\n\n**IMPORTANTE**: Cada folder de esta colección contiene instrucciones de ayuda para que puedas consumir de forma correcta nuestra API.\n\nMuchas gracias por tu confianza y recuerda que estamos a tus órdenes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "366816"
+  },
+  "item": [
+    {
+      "name": "Paso 1",
+      "item": [
+        {
+          "name": "Crear Llave",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Store the captcha response in a variable",
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"KeyValue\", jsonData.key);",
+                  "console.log(\"Llave Obtenida: \" + jsonData.key);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/Users/Createkey",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "Users",
+                "Createkey"
+              ]
+            },
+            "description": "Get a new captcha from the SAT API"
+          },
+          "response": []
+        }
+      ],
+      "description": "El primer paso es obtener tu llave para esto debes ir a [https://web.sat-go.com/consultar](https://web.sat-go.com/consultar) y copiar tu token temporal, este servirá para poder generar tu **KEY**, esta no tiene vigencia y te servirá para generar **tokens** dinámicos. Es importante mencionar que este paso lo debes hacer solo 1 vez y guardar tu token.\n\n<img src=\"https://content.pstmn.io/bd5b9b5e-18e6-4f0c-ba58-e15b22a56258/aW1hZ2UucG5n\" width=\"533\" height=\"238\">\n\nUna vez que tienes tu token, debes ingresar en el request **Crear Llave** aqui en **postman**, dar click en **Authorization**, actualizar la variable **tokenCliente** con el token que obtuviste en el portal y dar click en el botón **Send,** esto generará una llave que servirá para generar tokens dinámicos, este valor de la **KEY** se guarda en una variable aquí en **POSTMAN** , algo importante que mencionar, esta llave debes guardarla para poder automatizar, ya que con ella podrás generar tokens dinámicos con los cuales podrás consumir nuestra API.\n\n<img src=\"https://content.pstmn.io/17670642-9395-405e-a2fc-41c6028fadd0/aW1hZ2UucG5n\" alt=\"\" height=\"637\" width=\"1740\">"
+    },
+    {
+      "name": "Genera Token",
+      "item": [
+        {
+          "name": "Obtener Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Store the captcha response in a variable",
+                  "var jsonData = pm.response.json();",
+                  "",
+                  "// Store the captcha data in collection variables",
+                  "pm.collectionVariables.set(\"tokenCliente\", jsonData.tokens.access.value);",
+                  "",
+                  "",
+                  "// Log the stored captcha ID for verification",
+                  "console.log(\"Stored Token: \" + jsonData.tokens.access.value);",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"key\":\"{{KeyValue}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/Auth/token-json",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "token-json"
+              ]
+            },
+            "description": "Get a new captcha from the SAT API"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder generar un token dinámico, el requisito es haber ejecutado de forma correcta el **Paso 1 ,** una vez ejecutado, da click en _**Genera Token / Obtener Token**_ _y presiona el botón_ _**Send**____, como el valor de la_ _**KEY**_ _ya está almacenada en una variable, en automático deberá desplegarte un_ _**token**_ _como se muestra en la imagen siguiente:_\n\n<img src=\"https://content.pstmn.io/3d0f0e7b-ec1b-4455-b8d5-48e2779cf516/aW1hZ2UucG5n\" width=\"1375\" height=\"835\">"
+    },
+    {
+      "name": "Descarga Constancia de Situacion Fiscal",
+      "item": [
+        {
+          "name": "Obtener CSF CIEC",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {
+              "content-type": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Secret",
+                "value": "{{CIecCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/csf",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "csf"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener CSF Fiel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/csffiel",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "csffiel"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder descargar tu CSF primero debiste haber ejecutado el _**Paso 1**_ de esta colección, cuando hayas ejecutado correctamente el **Paso 1**, ya estás listo para descargar tu CSF, puedes hacerlo de 2 formas diferentes, la primera es utilizando tu CIEC, para esto debes ir al request **Obtener CSF CIEC,** dar click en Headers y actualizar la variable **RFCCliente y CIecCliente,** una vez que hayas actualizado las variables puedes dar click en el botón **Send**\n\n<img src=\"https://content.pstmn.io/7311de08-ba10-4b2b-a52b-0d54d616ac05/aW1hZ2UucG5n\" width=\"1741\" height=\"642\">\n\nLa segunda opción es mediante la FIEL, aquí de igual forma debes ejecutar correctamente el **Paso 1,** una vez que está ejecutado, debes dar click en **Obtener CSF Fiel**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en **body** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente**"
+    },
+    {
+      "name": "Descarga de Comprobantes",
+      "item": [
+        {
+          "name": "Obtener Comprobantes CIEC",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {
+              "content-type": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Secret",
+                "value": "{{CIecCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/fac?tipo=recibidos&tipoBusqueda=1&estatusFactura=-1&mes=1&anio=2025",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "fac"
+              ],
+              "query": [
+                {
+                  "key": "tipo",
+                  "value": "recibidos"
+                },
+                {
+                  "key": "tipoBusqueda",
+                  "value": "1",
+                  "description": "Búsqueda por fecha"
+                },
+                {
+                  "key": "estatusFactura",
+                  "value": "-1",
+                  "description": "-1 - Todos y 1 Vigentes"
+                },
+                {
+                  "key": "requestId",
+                  "value": "fe956326-acb6-4048-8467-241b29f7f6e6",
+                  "description": "No debe ir cuando es la primera petición, este valor lo obtienes cuando realizas una descarga, este valor representa la sesión con el SAT y debe ser usado en peticiones subsecuentes.",
+                  "disabled": true
+                },
+                {
+                  "key": "mes",
+                  "value": "1",
+                  "description": "Mes 1-12"
+                },
+                {
+                  "key": "anio",
+                  "value": "2025",
+                  "description": "Año"
+                }
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Comprobantes FIEL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/facfiel?tipoBusqueda=1&estatusFactura=-1&requestId=eb7bba2a-26b2-4599-830e-445682ed2b4b&fecha_inicial=2025-01-01 00:00:00&fecha_final=2025-01-07 23:59:59&tipo=recibidos&solicitaMetadata=false&descargaComprobantes=true",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "facfiel"
+              ],
+              "query": [
+                {
+                  "key": "tipoBusqueda",
+                  "value": "1",
+                  "description": "Fecha 1 , UUID 0"
+                },
+                {
+                  "key": "estatusFactura",
+                  "value": "-1",
+                  "description": "-1 - Todos y 1 Vigentes"
+                },
+                {
+                  "key": "requestId",
+                  "value": "eb7bba2a-26b2-4599-830e-445682ed2b4b",
+                  "description": "No debe ir cuando es la primera petición, este valor lo obtienes cuando realizas una descarga, este valor representa la sesión con el SAT y debe ser usado en peticiones subsecuentes."
+                },
+                {
+                  "key": "fecha_inicial",
+                  "value": "2025-01-01 00:00:00",
+                  "description": "Fecha inicial de búsqueda"
+                },
+                {
+                  "key": "fecha_final",
+                  "value": "2025-01-07 23:59:59",
+                  "description": "Fecha final de búsqueda"
+                },
+                {
+                  "key": "tipo",
+                  "value": "recibidos",
+                  "description": "emitidos o recibidos"
+                },
+                {
+                  "key": "solicitaMetadata",
+                  "value": "false"
+                },
+                {
+                  "key": "descargaComprobantes",
+                  "value": "true"
+                },
+                {
+                  "key": "uuid",
+                  "value": "7EB73EF9-1232-4A5E-AF5F-2B52D6C963F8",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Metadata Fiel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/descargametadatafiel?folioDescarga=A66605B6-0B28-41B8-9E6F-8D150BBE30A8",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "descargametadatafiel"
+              ],
+              "query": [
+                {
+                  "key": "anio",
+                  "value": "2025",
+                  "disabled": true
+                },
+                {
+                  "key": "mes",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "requestId",
+                  "value": "fafacc1e-4c85-424f-b72d-291552001189",
+                  "disabled": true
+                },
+                {
+                  "key": "folioDescarga",
+                  "value": "A66605B6-0B28-41B8-9E6F-8D150BBE30A8"
+                }
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder descargar tus comprobantes primero debiste haber ejecutado el **Genera Token** de esta colección, cuando hayas ejecutado correctamente el **Genera Token** ya estás listo para descargar tus comprobantes, puedes hacerlo de 2 formas diferentes, la primera es utilizando tu CIEC, para esto debes ir al request **Obtener Comprobantes CIEC,** dar click en **Headers** y actualizar la variable **RFCCliente y CIecCliente,** una vez que hayas actualizado las variables puedes dar click en el botón **Send**\n\n<img src=\"https://content.pstmn.io/871f7e08-72f4-4336-99e6-806c8605c9f1/aW1hZ2UucG5n\" width=\"1221\" height=\"458\">\n\nLa segunda opción es mediante la FIEL, aquí de igual forma debes ejecutar correctamente el **Paso 1,** una vez que está ejecutado, debes dar click en **Obtener Comprobantes Fiel**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en **body** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente**\n\n<img src=\"https://content.pstmn.io/151b2a0c-80ad-4c28-9406-cd28c0f28ea4/aW1hZ2UucG5n\" width=\"1736\" height=\"612\">\n\nParámetros que reciben:\n\n- CIEC\n    \n    - **tipo:** recibidos o emitidos\n        \n    - **tipoBusqueda: 1 (busqueda por fecha)**\n        \n    - **estatusFactura**: -1 (Todos) 1 (Vigentes\n        \n    - **mes**: 1-12\n        \n    - **anio**: Año de la búsqueda\n        \n    - **requestId**: Es un valor que se obtiene despues de la primer llamada del SAT, este **requestId** representa una sesión con el SAT, es como si fuera la representación de una cookie de sesión con el SAT, la podrás obtener como en la siguiente imagen:\n        \n\n<img src=\"https://content.pstmn.io/b498cfa4-2b9a-4c70-9b94-73d8995036cd/aW1hZ2UucG5n\" alt=\"Ejemplo%20de%20respuesta%20exitosa%20de%20descarga%20de%20comprobantes\" width=\"355\" height=\"176\">\n\n<img src=\"https://content.pstmn.io/0c056dfa-3185-4d0c-9f75-f5dd89fc8bc4/aW1hZ2UucG5n\" alt=\"Ejemplo%20de%20como%20se%20envian%20los%20parámetros\" width=\"1387\" height=\"448\">"
+    },
+    {
+      "name": "Descarga de Retenciones",
+      "item": [
+        {
+          "name": "Obtener Retenciones FIEL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "uuid": "683979e4-c25f-4b9f-84b2-83dae8397a6b",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "uuid": "870f884c-98bf-414f-901e-c9131ce92652",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text",
+                  "uuid": "7e371209-b9d4-4190-95c3-ef71caebfa23"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/retencionfiel?tipoBusqueda=1&estatusFactura=0&fecha_inicial=2025-01-01 00:46:52&fecha_final=2025-12-13 23:46:52&tipo=recibidos&solicitaMetadata=false&descargaComprobantes=false",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "retencionfiel"
+              ],
+              "query": [
+                {
+                  "key": "tipoBusqueda",
+                  "value": "1",
+                  "description": "1 fecha ,0 uuid"
+                },
+                {
+                  "key": "estatusFactura",
+                  "value": "0",
+                  "description": "-1 - Todos y 1 Vigentes"
+                },
+                {
+                  "key": "requestId",
+                  "value": "f215071e-bf03-4e88-86f4-c1b39b8e807d",
+                  "description": "No debe ir cuando es la primera petición, este valor lo obtienes cuando realizas una descarga, este valor representa la sesión con el SAT y debe ser usado en peticiones subsecuentes.",
+                  "disabled": true
+                },
+                {
+                  "key": "fecha_inicial",
+                  "value": "2025-01-01 00:46:52",
+                  "description": "Fecha inicial de búsqueda"
+                },
+                {
+                  "key": "fecha_final",
+                  "value": "2025-12-13 23:46:52",
+                  "description": "Fecha final de búsqueda"
+                },
+                {
+                  "key": "tipo",
+                  "value": "recibidos",
+                  "description": "emitidos o recibidos"
+                },
+                {
+                  "key": "solicitaMetadata",
+                  "value": "false"
+                },
+                {
+                  "key": "descargaComprobantes",
+                  "value": "false"
+                },
+                {
+                  "key": "uuid",
+                  "value": "08EE66CE-1C21-48A9-B727-7A5DE0CE867B",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Metadata Fiel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let base64 = pm.response.json().file;\r",
+                  "\r",
+                  "// Convertir Base64 a binario\r",
+                  "let binary = atob(base64);\r",
+                  "\r",
+                  "// Guardarlo en una variable global\r",
+                  "pm.environment.set(\"zipBinary\", binary);\r",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "uuid": "683979e4-c25f-4b9f-84b2-83dae8397a6b",
+                  "src": "postman-cloud:///1f08117b-cde6-4dd0-93ef-eb17d003dd68"
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "uuid": "870f884c-98bf-414f-901e-c9131ce92652",
+                  "src": "postman-cloud:///1f08117b-65e4-4e30-9e7e-c12d7d435b36"
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text",
+                  "uuid": "7e371209-b9d4-4190-95c3-ef71caebfa23"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/api/v2/Consultar/descargaretencionmetadatafiel?folioDescarga=7BD9382A-AFC7-4082-8D85-503A795DDAFE",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "descargaretencionmetadatafiel"
+              ],
+              "query": [
+                {
+                  "key": "requestId",
+                  "value": "094862b4-25e6-43c6-8c45-4b7d9d6a5642",
+                  "disabled": true
+                },
+                {
+                  "key": "folioDescarga",
+                  "value": "7BD9382A-AFC7-4082-8D85-503A795DDAFE"
+                }
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder descargar tus retenciones primero debiste haber ejecutado el **Genera Token** de esta colección, cuando hayas ejecutado correctamente el **Genera Token** ya estás listo para descargar tus comprobantes de retenciones.\n\nLa segunda opción es mediante la FIEL, aquí de igual forma debes ejecutar correctamente el **Paso 1,** una vez que está ejecutado, debes dar click en **Obtener Retenciones Fiel**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en **body** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente**\n\n<img src=\"https://content.pstmn.io/3b695ea7-a686-4e1e-9210-4e2674dbe2f6/aW1hZ2UucG5n\" width=\"1751\" height=\"791\">\n\nParámetros que reciben:\n\n- **tipo:** recibidos o emitidos\n    \n- **tipoBusqueda: 1 (busqueda por fecha), 0 (uuid)**\n    \n- **estatusFactura**: -1 (Todos) 1 (Vigentes\n    \n- **fecha_inicial** (Formato: yyyy-MM-dd HH:mm:ss)\n    \n- **fecha_final** (Formato: yyyy-MM-dd HH:mm:ss)\n    \n- **UUID**: Se utiliza cuando **tipoBusqueda = 0**\n    \n- **descargaComprobantes**: true -> Descarga comprobantes, false -> No descarga el XML solo muestra la información.\n    \n- **solicitaMetadata**: true -> Realiza la solicitud de metadata sobre el rango de fechas.\n    \n- **requestId**: Es un valor que se obtiene despues de la primer llamada del SAT, este **requestId** representa una sesión con el SAT, es como si fuera la representación de una cookie de sesión con el SAT, la podrás obtener como en la siguiente imagen:\n    \n\n<img src=\"https://content.pstmn.io/b498cfa4-2b9a-4c70-9b94-73d8995036cd/aW1hZ2UucG5n\" alt=\"Ejemplo%20de%20respuesta%20exitosa%20de%20descarga%20de%20comprobantes\" width=\"355\" height=\"176\">"
+    },
+    {
+      "name": "Descarga de Opinion de Cumplimiento",
+      "item": [
+        {
+          "name": "Obtener Opinión CIEC",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {
+              "content-type": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Secret",
+                "value": "{{CIecCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/oc",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "oc"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Opinión FIEL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/ocfiel",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "ocfiel"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Esta carpeta contiene endpoints para obtener la Opinión de Cumplimiento del SAT utilizando dos métodos de autenticación. Es importante mencionar que debes haber ejecutado **Genera Token / Obtener Token** para que puedas utilizar la descarga de opinión de cumplimiento.\n\nEndpoints incluidos:\n\n- Obtener Opinión CIEC: Realiza una consulta usando las credenciales CIEC previamente almacenadas.\n    \n- Obtener Opinión FIEL: Realiza una consulta usando la FIEL previamente almacenada.\n    \n\nVariables necesarias (collección):\n\n- RFCliente\n    \n- CIecCliente (Cuando se utiliza la descarga por CIEC)\n    \n- PassFielCliente (Cuando se utiliza la descarga por FIEL\n    \n\nInstrucciones de uso:\n\n1. Para descarga por medio de CIEC, ingresa a **Obtener Opinión CIEC** da click en **Headers** y actualiza las variables **RFCCliente y CIecCliente,** posteriormente da click en el botón **SEND**\n    \n\n<img src=\"https://content.pstmn.io/e4e5bb81-76ca-41be-bdbb-c722c589f9d7/aW1hZ2UucG5n\" width=\"1204\" height=\"587\">\n\n2\\. Para descarga por medio de FIEL, ingresa a **Obtener Opinión FIEL** da click en **Headers** y actualiza la variable **RFCCliente,** posteriormente da click en **Body** y agrega en el parámetro **llavePrivada** tu archivo .key, en el parámetro **Certificado** agrega tu archivo .cer de la FIEL y por último actualiza la variable **PassFielCliente** el cual es la contraseña de tu llave privada.\n\n<img src=\"https://content.pstmn.io/4d09f381-2f60-4cef-aa17-e4f0e2516cdf/aW1hZ2UucG5n\" alt=\"\" height=\"687\" width=\"1240\">"
+    },
+    {
+      "name": "Descarga Declaraciones",
+      "item": [
+        {
+          "name": "Obtener Declaraciones CIEC",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {
+              "content-type": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Secret",
+                "value": "{{CIecCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/dec?ejercicio=2025&mes=4",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "dec"
+              ],
+              "query": [
+                {
+                  "key": "ejercicio",
+                  "value": "2025"
+                },
+                {
+                  "key": "mes",
+                  "value": "4"
+                },
+                {
+                  "key": "requestId",
+                  "value": "0cec56ff-c625-48bf-bf7e-510cc160a744",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Declaraciones FIEL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFC}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/decfiel?ejercicio=2025&mes=2",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "decfiel"
+              ],
+              "query": [
+                {
+                  "key": "ejercicio",
+                  "value": "2025"
+                },
+                {
+                  "key": "mes",
+                  "value": "2"
+                },
+                {
+                  "key": "requestId",
+                  "value": "8d7dfc3e-28d4-4ccb-9e6b-579ff669d6e5",
+                  "disabled": true
+                },
+                {
+                  "key": "fecha_inicial",
+                  "value": "2025-01-01 00:00:00",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder descargar tus declaraciones primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar tus declaraciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando tu CIEC.\n    \n    - para esto debes ir al request **Obtener Declaraciones CIEC,** dar click en **Headers** y actualizar la variable **RFCCliente y CIecCliente,** una vez que hayas actualizado las variables puedes dar click en el botón **Send.**\n        \n\n<img src=\"https://content.pstmn.io/bd7c75f1-4131-4d43-a841-4c86f95f452d/aW1hZ2UucG5n\" width=\"1753\" height=\"563\">\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Declaraciones Fiel**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente**\n        \n\n<img src=\"https://content.pstmn.io/e90e1ed4-9046-4703-8862-5dd195ddbf66/aW1hZ2UucG5n\" width=\"1736\" height=\"682\">\n\nParámetros que reciben los endpoints:\n\n- Para Ciec y FIEL\n    \n    - **ejercicio**: Es el Año del cual quieres consultar\n        \n    - **mes**: Mes del cual quieras consultar 0-12 donde 0 son todos los meses\n        \n    - **requestId**: Es un valor que se obtiene despues de la primer llamada del SAT, este **requestId** representa una sesión con el SAT, es como si fuera la representación de una cookie de sesión con el SAT, después de tu primer llamada la podrás obtener de los encabezados de la respuesta como se muestra en la siguiente imagen:\n        \n\n<img src=\"https://content.pstmn.io/a5c52382-6cdc-460f-a979-4442692485b3/aW1hZ2UucG5n\" width=\"1264\" height=\"392\">\n\nDespués de obtener esté **requestId**, puede enviarlo como parámetro y lo que hará es tomar la sesión actual del SAT para así iniciar sesión nuevamente y que el SAT te pueda bloquear temporalmente."
+    },
+    {
+      "name": "Descarga Opinión IMSS",
+      "item": [
+        {
+          "name": "Obtener Opinión IMSS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {
+              "content-type": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/imssoc",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "imssoc"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder descargar tus declaraciones primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar tus declaraciones, puedes hacerlo de la siguiente manera\n\n- Utilizando tu RFC.\n    \n    - para esto debes ir al request **Obtener Opinión IMSS,** dar click en **Headers** y actualizar la variable **RFCCliente,** una vez que hayas actualizado las variables puedes dar click en el botón **Send.**\n        \n\n<img src=\"https://content.pstmn.io/61de0f14-0196-43e0-8520-fe12d0b1e688/aW1hZ2UucG5n\" alt=\"\" height=\"832\" width=\"1750\">"
+    },
+    {
+      "name": "Obtener Notificaciones",
+      "item": [
+        {
+          "name": "Descarga Notificaciones FIEL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/notificacionesfiel?tipoNotificacion=notificadas&descargarNotificaciones=true&requestId=d66b5e9e-c4b0-4e0e-b7e6-2370301a042b",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "notificacionesfiel"
+              ],
+              "query": [
+                {
+                  "key": "tipoNotificacion",
+                  "value": "notificadas",
+                  "description": "notificadas (Que ya han sido leidas) o pendientes (Que aun no han sido leidas)\n"
+                },
+                {
+                  "key": "descargarNotificaciones",
+                  "value": "true",
+                  "description": "false - No descarga las notificaciones, únicamente verás la información de las notificaciones sin los archivos PDFs en la respuesta.\n"
+                },
+                {
+                  "key": "requestId",
+                  "value": "d66b5e9e-c4b0-4e0e-b7e6-2370301a042b"
+                }
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder descargar tus notificaciones del SAT primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar ttus notificaciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Descargar Notificaciones**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente** con la contraseña de la llave privada.\n        \n\n<img src=\"https://content.pstmn.io/6935223c-cecd-4120-8537-467d8036f3a4/aW1hZ2UucG5n\" width=\"1733\" height=\"586\">\n\nParámetros que reciben los endpoints:\n\n- Para FIEL\n    \n    - **tipoNotificacion**: Es el Año del cual quieres consultar\n        \n    - **descargarNotificaciones**: Mes del cual quieras consultar 0-12 donde 0 son todos los meses\n        \n    - **requestId**: Es un valor que se obtiene despues de la primer llamada del SAT, este **requestId** representa una sesión con el SAT, es como si fuera la representación de una cookie de sesión con el SAT, después de tu primer llamada la podrás obtener de los encabezados de la respuesta como se muestra en la siguiente imagen:\n        \n\n<img src=\"https://content.pstmn.io/04646d09-94ef-4f27-a17b-a4b144b7284a/aW1hZ2UucG5n\" width=\"1298\" height=\"696\">\n\nDespués de obtener esté **requestId**, puede enviarlo como parámetro y lo que hará es tomar la sesión actual del SAT para así iniciar sesión nuevamente y que el SAT te pueda bloquear temporalmente."
+    },
+    {
+      "name": "Obtener Comunicados",
+      "item": [
+        {
+          "name": "Obtener Comunicados FIEL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/comunicadosfiel",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "comunicadosfiel"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder descargar tus comunicados del SAT primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar ttus notificaciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Comunicados**, dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente** con la contraseña de la llave privada.\n        \n\n<img src=\"https://content.pstmn.io/391bb62b-c6c8-424b-ac54-b8e6a0aa2212/aW1hZ2UucG5n\" alt=\"\" height=\"793\" width=\"1756\">"
+    },
+    {
+      "name": "Obtener EFOS",
+      "item": [
+        {
+          "name": "Obtener EFOS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Efos/rfc/BIS1010014B0",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Efos",
+                "rfc",
+                "BIS1010014B0"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "RFCCliente",
+      "value": ""
+    },
+    {
+      "key": "CIecCliente",
+      "value": ""
+    },
+    {
+      "key": "catpchaValue",
+      "value": ""
+    },
+    {
+      "key": "captchaImage",
+      "value": ""
+    },
+    {
+      "key": "requestId",
+      "value": ""
+    },
+    {
+      "key": "formActionUrl",
+      "value": ""
+    },
+    {
+      "key": "KeyValue",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "tokenCliente",
+      "value": ""
+    },
+    {
+      "key": "PassFielCliente",
+      "value": "",
+      "type": "default"
+    }
+  ]
 }
