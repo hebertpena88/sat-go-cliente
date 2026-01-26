@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "388c80a3-d3ef-49b6-bea1-e9550cdbd883",
+    "_postman_id": "a822510e-4cfb-47ef-87d2-a8aa7197e49a",
     "name": "Sat-Go-Clientes",
     "description": "Hola!, muchas gracias por descargar esta colección para utilizar nuestra API SAT-GO, aquí encontrarás todo lo necesario para conectarte a nuestros servicios, desde crear tu KEY, tokens y hasta descargar comprobantes, constancias y opiniones. Si tienes alguna duda o comentario no dudes en enviarnos un mensaje por whatsapp al +52 998 195 7130 y con gusto te atenderemos para resolver cualquier tema.\n\nPara poder consumir los servicios de SAT-GO es indispensable tener al menos los siguientes pasos:\n\n- Estar registrado en [<i>https://web.sat-go.com</i>](https://web.sat-go.com)\n    \n- Haber ejecutado el **paso 1** para crear tu llave\n    \n- Obtener un token con la llave creada en el **paso 1**\n    \n\nUna vez que tengas tu llave y tu token puedes utilizar todos nuestros endpoints que están del lado izquierdo de la colección.\n\n**IMPORTANTE**: Cada folder de esta colección contiene instrucciones de ayuda para que puedas consumir de forma correcta nuestra API.\n\nMuchas gracias por tu confianza y recuerda que estamos a tus órdenes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -892,14 +892,14 @@
                   "description": "llave privada",
                   "type": "file",
                   "uuid": "683979e4-c25f-4b9f-84b2-83dae8397a6b",
-                  "src": "postman-cloud:///1f08117b-cde6-4dd0-93ef-eb17d003dd68"
+                  "value": null
                 },
                 {
                   "key": "Certificado",
                   "description": "certificado",
                   "type": "file",
                   "uuid": "870f884c-98bf-414f-901e-c9131ce92652",
-                  "src": "postman-cloud:///1f08117b-65e4-4e30-9e7e-c12d7d435b36"
+                  "value": null
                 },
                 {
                   "key": "Contrasena",
