@@ -1815,9 +1815,12 @@
               ]
             },
             "url": {
-              "raw": "{{url}}/api/v2/SatWebService/solicita?tipo=recibidos&fecha_inicial=2024-01-01 00:00:00&fecha_Final=2024-02-20 23:59:59&tipoBusqueda=CFDI",
+              "raw": "https://api.sat-go.com/api/v2/SatWebService/solicita?tipo=recibidos&fecha_inicial=2024-01-01 00:00:00&fecha_Final=2024-02-20 23:59:59&tipoBusqueda=CFDI",
+              "protocol": "https",
               "host": [
-                "{{url}}"
+                "api",
+                "sat-go",
+                "com"
               ],
               "path": [
                 "api",
@@ -1931,9 +1934,12 @@
               ]
             },
             "url": {
-              "raw": "{{url}}/api/v2/SatWebService/verifica?IdSolicitud=6dc309b6-dc22-476f-b675-e4396667fd6b",
+              "raw": "https://api.sat-go.com/api/v2/SatWebService/verifica?IdSolicitud=6dc309b6-dc22-476f-b675-e4396667fd6b",
+              "protocol": "https",
               "host": [
-                "{{url}}"
+                "api",
+                "sat-go",
+                "com"
               ],
               "path": [
                 "api",
@@ -2032,9 +2038,12 @@
               ]
             },
             "url": {
-              "raw": "{{url}}/api/v2/SatWebService/descarga?IdPaquete=f27cdc5d-1100-45b9-b78d-e1d81398a32d_01",
+              "raw": "https://api.sat-go.com/api/v2/SatWebService/descarga?IdPaquete=f27cdc5d-1100-45b9-b78d-e1d81398a32d_01",
+              "protocol": "https",
               "host": [
-                "{{url}}"
+                "api",
+                "sat-go",
+                "com"
               ],
               "path": [
                 "api",
