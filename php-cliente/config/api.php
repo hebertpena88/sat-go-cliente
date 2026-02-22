@@ -9,7 +9,9 @@ class ApiConfig
     public const BASE_URL = 'https://api.sat-go.com//api/v2';
     
     public const ENDPOINTS = [
-        'CONSULTAR_FACFIEL' => '/Consultar/facfiel'
+        'CONSULTAR_FACFIEL' => '/Consultar/facfiel',
+        'CONSULTAR_CSFFIEL' => '/Consultar/csffiel',
+        'CONSULTAR_OCFIEL'  => '/Consultar/ocfiel'
     ];
     
     public const TIMEOUT = 30;
