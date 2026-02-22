@@ -11,7 +11,8 @@ class ApiConfig
     public const ENDPOINTS = [
         'CONSULTAR_FACFIEL' => '/Consultar/facfiel',
         'CONSULTAR_CSFFIEL' => '/Consultar/csffiel',
-        'CONSULTAR_OCFIEL'  => '/Consultar/ocfiel'
+        'CONSULTAR_OCFIEL'  => '/Consultar/ocfiel',
+        'CONSULTAR_DECFIEL' => '/Consultar/decfiel'
     ];
     
     public const TIMEOUT = 30;
