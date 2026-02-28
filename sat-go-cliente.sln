@@ -1,0 +1,29 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "net-cliente", "net-cliente", "{2D76C129-8907-A709-73B3-7408C9C6182C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SatGoCliente", "net-cliente\SatGoCliente\SatGoCliente.csproj", "{0FBCCB0D-2204-E544-0E88-7F1C00A5A393}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0FBCCB0D-2204-E544-0E88-7F1C00A5A393}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FBCCB0D-2204-E544-0E88-7F1C00A5A393}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FBCCB0D-2204-E544-0E88-7F1C00A5A393}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FBCCB0D-2204-E544-0E88-7F1C00A5A393}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0FBCCB0D-2204-E544-0E88-7F1C00A5A393} = {2D76C129-8907-A709-73B3-7408C9C6182C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {659EF12A-A44E-40CD-8A7C-D2D324B19289}
+	EndGlobalSection
+EndGlobal
