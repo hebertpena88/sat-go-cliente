@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "0a9e1f0d-1f2d-4981-87cc-1c1b0d41ba35",
+    "_postman_id": "0f97dd0a-8436-4c0f-9041-bbcde3f31ad5",
     "name": "Sat-Go-Clientes",
     "description": "Hola!, muchas gracias por descargar esta colección para utilizar nuestra API SAT-GO, aquí encontrarás todo lo necesario para conectarte a nuestros servicios, desde crear tu KEY, tokens y hasta descargar comprobantes, constancias y opiniones. Si tienes alguna duda o comentario no dudes en enviarnos un mensaje por whatsapp al +52 998 195 7130 y con gusto te atenderemos para resolver cualquier tema.\n\nPara poder consumir los servicios de SAT-GO es indispensable tener al menos los siguientes pasos:\n\n- Estar registrado en [<i>https://web.sat-go.com</i>](https://web.sat-go.com)\n    \n- Haber ejecutado el **paso 1** para crear tu llave\n    \n- Obtener un token con la llave creada en el **paso 1**\n    \n\nUna vez que tengas tu llave y tu token puedes utilizar todos nuestros endpoints que están del lado izquierdo de la colección.\n\n**IMPORTANTE**: Cada folder de esta colección contiene instrucciones de ayuda para que puedas consumir de forma correcta nuestra API.\n\nMuchas gracias por tu confianza y recuerda que estamos a tus órdenes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -1022,6 +1022,79 @@
           "response": []
         },
         {
+          "name": "Obtener Opinión Público",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {
+              "content-type": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": ""
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/ocpublico",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "ocpublico"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        },
+        {
           "name": "Obtener Opinión FIEL",
           "event": [
             {
@@ -1117,7 +1190,7 @@
           "response": []
         }
       ],
-      "description": "Esta carpeta contiene endpoints para obtener la Opinión de Cumplimiento del SAT utilizando dos métodos de autenticación. Es importante mencionar que debes haber ejecutado **Genera Token / Obtener Token** para que puedas utilizar la descarga de opinión de cumplimiento.\n\nEndpoints incluidos:\n\n- Obtener Opinión CIEC: Realiza una consulta usando las credenciales CIEC previamente almacenadas.\n    \n- Obtener Opinión FIEL: Realiza una consulta usando la FIEL previamente almacenada.\n    \n\nVariables necesarias (collección):\n\n- RFCliente\n    \n- CIecCliente (Cuando se utiliza la descarga por CIEC)\n    \n- PassFielCliente (Cuando se utiliza la descarga por FIEL\n    \n\nInstrucciones de uso:\n\n1. Para descarga por medio de CIEC, ingresa a **Obtener Opinión CIEC** da click en **Headers** y actualiza las variables **RFCCliente y CIecCliente,** posteriormente da click en el botón **SEND**\n    \n\n<img src=\"https://content.pstmn.io/e4e5bb81-76ca-41be-bdbb-c722c589f9d7/aW1hZ2UucG5n\" width=\"1204\" height=\"587\">\n\n2\\. Para descarga por medio de FIEL, ingresa a **Obtener Opinión FIEL** da click en **Headers** y actualiza la variable **RFCCliente,** posteriormente da click en **Body** y agrega en el parámetro **llavePrivada** tu archivo .key, en el parámetro **Certificado** agrega tu archivo .cer de la FIEL y por último actualiza la variable **PassFielCliente** el cual es la contraseña de tu llave privada.\n\n<img src=\"https://content.pstmn.io/4d09f381-2f60-4cef-aa17-e4f0e2516cdf/aW1hZ2UucG5n\" alt=\"\" height=\"687\" width=\"1240\">"
+      "description": "Esta carpeta contiene endpoints para obtener la Opinión de Cumplimiento del SAT utilizando dos métodos de autenticación. Es importante mencionar que debes haber ejecutado **Genera Token / Obtener Token** para que puedas utilizar la descarga de opinión de cumplimiento.\n\nEndpoints incluidos:\n\n- Obtener Opinión CIEC: Realiza una consulta usando las credenciales CIEC previamente almacenadas.\n    \n- Obtener Opinión FIEL: Realiza una consulta usando la FIEL previamente almacenada.\n    \n- Obtener Opinión Público: Descarga la opinión de cumplimiento sin la necesidad de utilizar CIEC o e.firma, para esto el usuario debe tener habilitado el permiso de consulta de opinión de cumplimiento.\n    \n\nVariables necesarias (collección):\n\n- RFCliente\n    \n- CIecCliente (Cuando se utiliza la descarga por CIEC)\n    \n- PassFielCliente (Cuando se utiliza la descarga por FIEL\n    \n\nInstrucciones de uso:\n\n1. Para descarga por medio de CIEC, ingresa a **Obtener Opinión CIEC** da click en **Headers** y actualiza las variables **RFCCliente y CIecCliente,** posteriormente da click en el botón **SEND**\n    \n\n<img src=\"https://content.pstmn.io/e4e5bb81-76ca-41be-bdbb-c722c589f9d7/aW1hZ2UucG5n\" width=\"1204\" height=\"587\">\n\n2\\. Para descarga por medio de FIEL, ingresa a **Obtener Opinión FIEL** da click en **Headers** y actualiza la variable **RFCCliente,** posteriormente da click en **Body** y agrega en el parámetro **llavePrivada** tu archivo .key, en el parámetro **Certificado** agrega tu archivo .cer de la FIEL y por último actualiza la variable **PassFielCliente** el cual es la contraseña de tu llave privada.\n\n<img src=\"https://content.pstmn.io/4d09f381-2f60-4cef-aa17-e4f0e2516cdf/aW1hZ2UucG5n\" width=\"1240\" height=\"687\">"
     },
     {
       "name": "Descarga Declaraciones",
@@ -2064,6 +2137,186 @@
         }
       ],
       "description": "Para poder descargar tus comprobantes primero debiste haber ejecutado el **Genera Token** de esta colección, cuando hayas ejecutado correctamente el **Genera Token** ya estás listo para descargar tus comprobantes por medio del WS del SAT.  \nLos siguientes pasos te ayudarán a consumir el servicio de forma correcta:\n\n#### SOLICITUD\n\n1. Asegúrate de haber cargado tus archivos FIEL y la contraseña de la misma para que puedas autenticarte.\n    \n\n<img src=\"https://content.pstmn.io/120324de-72ee-489b-b328-aa4eb2a89073/aW1hZ2UucG5n\" width=\"463\" height=\"205\">\n\n2\\. De igual forma en la pestaña Header ingresa el RFC del cual vas a generar la petición.\n\n<img src=\"https://content.pstmn.io/77c27e99-74a2-467a-9de9-0e44e45c6c8c/aW1hZ2UucG5n\" width=\"369\" height=\"165\">\n\n3\\. En los parámetros ingresa la siguiente información:\n\n- fecha_inicial\n    \n- fecha_final\n    \n- tipo -> emitidos o recibidos\n    \n- tipoBusqueda -> CFDI o Metadata\n    \n\n<img src=\"https://content.pstmn.io/aca99296-305a-4b3b-bf02-8a4cba0fda0b/aW1hZ2UucG5n\" width=\"437\" height=\"190\">\n\n4\\. Presiona el botón de SEND y deberias ver algo como esto:\n\n<img src=\"https://content.pstmn.io/70a05e9f-f198-4c01-b7f9-ddb0ef178218/aW1hZ2UucG5n\" width=\"363\" height=\"188\">\n\nEl idSolicitud deberás almacenarlo ya que se usará en el siguiente endpoint **VERIFICA**\n\n#### VERIFICA\n\nEste endpoint se encarga de revisar con el SAT el estado de tu solicitud, deberás preguntar hasta que obtengas un status = 3 y un paqueteId\n\n1. Los pasos 1 y 2 de SOLICITA aplican aqui tambien.\n    \n2. Ingresa el parámetro IdSolicitud y pega el resultado de SOLICITA dentro del atributo idSolicitud\n    \n\n<img src=\"https://content.pstmn.io/506752af-9e11-4bb8-aa3b-ad54f5ef770a/aW1hZ2UucG5n\" width=\"379\" height=\"118\">\n\nCuando esté listo tu paquete verás un estadoSolicitud = 3 y un listado de paquetes, puede ser 1 o más, de lo contrario verás un estadoSolicitud = 1 o 2 lo cual significa que está en proceso.\n\n<img src=\"https://content.pstmn.io/c3123fe4-ce17-438c-9220-fbb431f8d47a/aW1hZ2UucG5n\" width=\"349\" height=\"211\">\n\nDESCARGA\n\nEste endpoint se encarga de descargar los paquetes obtenidos en el paso VERIFICA.\n\n1. Los pasos 1 y de de SOLICITA aplican aquí tambien.\n    \n2. Ingresa el parámetro IdPaquete que obtuviste en el endpoint VERIFICA y da click en SEND\n    \n\n<img src=\"https://content.pstmn.io/a7975ece-4576-472b-8dea-757cabe66186/aW1hZ2UucG5n\" width=\"387\" height=\"160\">\n\nDeberás ver el archivo zip en base64, este lo debes tratar como un archivo zip.\n\n<img src=\"https://content.pstmn.io/8ce534ff-2bf0-4f91-8994-68ac7d6f55be/aW1hZ2UucG5n\" alt=\"\" height=\"289\" width=\"385\">"
+    },
+    {
+      "name": "Obtener Información Fiscal",
+      "item": [
+        {
+          "name": "Obtener Información Fiscal FIEL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "uuid": "683979e4-c25f-4b9f-84b2-83dae8397a6b",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "uuid": "870f884c-98bf-414f-901e-c9131ce92652",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text",
+                  "uuid": "7e371209-b9d4-4190-95c3-ef71caebfa23"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{url}}/api/v2/Consultar/informacionfiscalfiel",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "informacionfiscalfiel"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener Información Fiscal Ciec",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true,
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              },
+              {
+                "key": "Secret",
+                "value": "{{CIecCliente}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{url}}/api/v2/Consultar/informacionfiscal",
+              "host": [
+                "{{url}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "informacionfiscal"
+              ]
+            },
+            "description": "Get CSF using the stored captcha"
+          },
+          "response": []
+        }
+      ],
+      "description": "Para poder descargar tu información fiscal del SAT primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar ttus notificaciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Información Fiscal FIEL** dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente** con la contraseña de la llave privada.\n        \n\n<img src=\"https://content.pstmn.io/7dda6342-6248-4e45-8632-ef10a2aec822/aW1hZ2UucG5n\" width=\"1240\" height=\"775\">\n\n- Utilizando la CIEC.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Información Fiscal CIEC** dar click en **Headers** y actualizar la variable **RFCCliente y CiecCliente** despues da click SEND\n        \n\n<img src=\"https://content.pstmn.io/43e84eb3-b0cc-4972-8684-fb16e974af66/aW1hZ2UucG5n\" alt=\"\" height=\"822\" width=\"1529\">"
     }
   ],
   "event": [
@@ -2129,8 +2382,7 @@
     },
     {
       "key": "PassFielCliente",
-      "value": "",
-      "type": "default"
+      "value": ""
     }
   ]
 }
