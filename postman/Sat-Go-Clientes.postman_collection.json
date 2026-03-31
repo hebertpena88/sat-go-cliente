@@ -2221,9 +2221,12 @@
               ]
             },
             "url": {
-              "raw": "{{url}}/api/v2/Consultar/informacionfiscalfiel",
+              "raw": "https://api.sat-go.com/api/v2/Consultar/informacionfiscalfiel",
+              "protocol": "https",
               "host": [
-                "{{url}}"
+                "api",
+                "sat-go",
+                "com"
               ],
               "path": [
                 "api",
