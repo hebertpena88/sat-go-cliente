@@ -336,13 +336,26 @@ require_once __DIR__ . '/config/api.php';
 
                     <form id="csfForm" enctype="multipart/form-data">
 
-                        <!-- Información FIEL -->
+                        <!-- Toggle FIEL / CIEC -->
+                        <input type="hidden" id="csf_metodo" name="csf_metodo" value="fiel">
                         <div class="row mb-3">
                             <div class="col">
-                                <h5>Información FIEL</h5>
+                                <div style="display:inline-flex; border:1px solid #dee2e6; border-radius:6px; overflow:hidden;">
+                                    <button type="button" id="csf-tab-fiel"
+                                            style="padding:8px 20px; border:none; background:#0d6efd; color:#fff; cursor:pointer; font-size:14px;"
+                                            onclick="csfSetMetodo('fiel')">
+                                        &#128274; FIEL (e.firma)
+                                    </button>
+                                    <button type="button" id="csf-tab-ciec"
+                                            style="padding:8px 20px; border:none; background:#f8f9fa; color:#495057; cursor:pointer; font-size:14px; border-left:1px solid #dee2e6;"
+                                            onclick="csfSetMetodo('ciec')">
+                                        &#128272; CIEC
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
+                        <!-- RFC y Token (comunes a ambos métodos) -->
                         <div class="row mb-3">
                             <div class="col-md-12">
                                 <div class="form-group">
@@ -364,28 +377,44 @@ require_once __DIR__ . '/config/api.php';
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="csf_llave_privada">Llave Privada (.key)</label>
-                                    <input type="file" class="form-control" id="csf_llave_privada"
-                                           name="csf_llave_privada" accept=".key">
+                        <!-- Campos exclusivos FIEL -->
+                        <div id="csf-fiel-fields">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="csf_llave_privada">Llave Privada (.key)</label>
+                                        <input type="file" class="form-control" id="csf_llave_privada"
+                                               name="csf_llave_privada" accept=".key">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="csf_certificado">Certificado (.cer)</label>
+                                        <input type="file" class="form-control" id="csf_certificado"
+                                               name="csf_certificado" accept=".cer">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="csf_contrasena">Contraseña de la Llave Privada</label>
+                                        <input type="password" class="form-control" id="csf_contrasena"
+                                               name="csf_contrasena"
+                                               value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>"
+                                               placeholder="Contraseña de la FIEL">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="csf_certificado">Certificado (.cer)</label>
-                                    <input type="file" class="form-control" id="csf_certificado"
-                                           name="csf_certificado" accept=".cer">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="csf_contrasena">Contraseña de la Llave Privada</label>
-                                    <input type="password" class="form-control" id="csf_contrasena"
-                                           name="csf_contrasena"
-                                           value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>"
-                                           placeholder="Contraseña de la FIEL" required>
+                        </div>
+
+                        <!-- Campos exclusivos CIEC -->
+                        <div id="csf-ciec-fields" style="display:none;">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label" for="csf_ciec">CIEC (Contraseña del SAT)</label>
+                                        <input type="password" class="form-control" id="csf_ciec"
+                                               name="csf_ciec" placeholder="Contraseña del portal del SAT (CIEC)">
+                                    </div>
                                 </div>
                             </div>
                         </div>

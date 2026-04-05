@@ -12,6 +12,7 @@ class ApiConfig
     public const ENDPOINTS = [
         'CONSULTAR_FACFIEL' => '/Consultar/facfiel',
         'CONSULTAR_CSFFIEL' => '/Consultar/csffiel',
+        'CONSULTAR_CSF'     => '/Consultar/csf',
         'CONSULTAR_OCFIEL'  => '/Consultar/ocfiel',
         'CONSULTAR_DECFIEL' => '/Consultar/decfiel'
     ];

@@ -635,6 +635,34 @@ function initCsfForm() {
 }
 
 /**
+ * Cambia el método de autenticación CSF entre FIEL y CIEC
+ */
+function csfSetMetodo(metodo) {
+    document.getElementById('csf_metodo').value = metodo;
+
+    const fielFields = document.getElementById('csf-fiel-fields');
+    const ciecFields = document.getElementById('csf-ciec-fields');
+    const tabFiel    = document.getElementById('csf-tab-fiel');
+    const tabCiec    = document.getElementById('csf-tab-ciec');
+
+    if (metodo === 'ciec') {
+        fielFields.style.display = 'none';
+        ciecFields.style.display = '';
+        tabFiel.style.background = '#f8f9fa';
+        tabFiel.style.color      = '#495057';
+        tabCiec.style.background = '#0d6efd';
+        tabCiec.style.color      = '#fff';
+    } else {
+        fielFields.style.display = '';
+        ciecFields.style.display = 'none';
+        tabFiel.style.background = '#0d6efd';
+        tabFiel.style.color      = '#fff';
+        tabCiec.style.background = '#f8f9fa';
+        tabCiec.style.color      = '#495057';
+    }
+}
+
+/**
  * Envía el formulario de CSF a la API
  */
 async function submitCsfForm() {

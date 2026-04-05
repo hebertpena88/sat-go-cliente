@@ -206,4 +206,117 @@ class CsfService
             ];
         }
     }
+
+    /**
+     * Descarga la CSF usando CIEC (contraseña del SAT).
+     * Usa GET /api/v2/Consultar/csf con el header Secret.
+     *
+     * @param array $request ['rfc', 'authorization', 'ciec']
+     * @return array Respuesta de la API
+     */
+    public static function descargarCsfCiec(array $request): array
+    {
+        try {
+            self::log('INFO', 'Iniciando descarga CSF (CIEC)', [
+                'rfc'           => $request['rfc'] ?? '',
+                'authorization' => substr($request['authorization'] ?? '', 0, 20) . '...'
+            ]);
+
+            $url = ApiConfig::BASE_URL . ApiConfig::ENDPOINTS['CONSULTAR_CSF'];
+            self::log('INFO', 'URL destino', $url);
+
+            $ch = curl_init();
+
+            $headers = [
+                'RFC: '           . $request['rfc'],
+                'Authorization: Bearer ' . $request['authorization'],
+                'Secret: '        . $request['ciec'],
+                'Accept: */*',
+                'User-Agent: PHP-SAT-Client/1.0',
+                'Cache-Control: no-cache'
+            ];
+
+            curl_setopt_array($ch, [
+                CURLOPT_URL            => $url,
+                CURLOPT_HTTPGET        => true,
+                CURLOPT_HTTPHEADER     => $headers,
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => ApiConfig::TIMEOUT,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_HEADER         => true
+            ]);
+
+            $raw         = curl_exec($ch);
+            $http_code   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $curl_error  = curl_error($ch);
+            curl_close($ch);
+
+            self::log('INFO', 'Respuesta recibida (CIEC)', [
+                'http_code'  => $http_code,
+                'body_size'  => strlen($raw) - $header_size,
+                'curl_error' => $curl_error ?: null
+            ]);
+
+            if ($curl_error) {
+                self::log('ERROR', 'Error cURL (CIEC)', $curl_error);
+                return [
+                    'success' => false,
+                    'error'   => 'Error de conexión: ' . $curl_error,
+                    'message' => 'Error al conectar con la API'
+                ];
+            }
+
+            $response_headers = substr($raw, 0, $header_size);
+            $body             = substr($raw, $header_size);
+
+            $content_type = 'application/octet-stream';
+            if (preg_match('/Content-Type:\s*([^\r\n]+)/i', $response_headers, $m)) {
+                $content_type = trim($m[1]);
+            }
+
+            $filename = 'constancia_situacion_fiscal.pdf';
+            if (preg_match('/filename=([^;\r\n]+)/i', $response_headers, $m)) {
+                $filename = trim(trim($m[1]), '"');
+            }
+
+            if ($http_code >= 200 && $http_code < 300) {
+                if (str_contains($content_type, 'application/pdf')) {
+                    self::log('INFO', 'PDF (CIEC) recibido correctamente', ['filename' => $filename, 'bytes' => strlen($body)]);
+                    return [
+                        'success'      => true,
+                        'is_pdf'       => true,
+                        'pdf_base64'   => base64_encode($body),
+                        'filename'     => $filename,
+                        'content_type' => $content_type,
+                        'message'      => 'CSF descargada exitosamente'
+                    ];
+                }
+                return [
+                    'success' => true,
+                    'data'    => json_decode($body, true) ?? $body,
+                    'message' => 'CSF descargada exitosamente'
+                ];
+            }
+
+            $data          = json_decode($body, true);
+            $error_message = $data['message'] ?? (trim($body) !== '' ? trim($body) : 'Error HTTP ' . $http_code);
+            self::log('ERROR', 'Error HTTP (CIEC)', ['http_code' => $http_code, 'body' => substr($body, 0, 500)]);
+            return [
+                'success' => false,
+                'error'   => $error_message,
+                'message' => 'Error al descargar la CSF',
+                'data'    => $data
+            ];
+
+        } catch (Exception $e) {
+            self::log('ERROR', 'Excepción no controlada (CIEC)', ['message' => $e->getMessage()]);
+            return [
+                'success' => false,
+                'error'   => $e->getMessage(),
+                'message' => 'Error inesperado al descargar la CSF'
+            ];
+        }
+    }
 }
