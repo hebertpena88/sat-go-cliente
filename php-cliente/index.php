@@ -17,7 +17,10 @@ require_once __DIR__ . '/config/api.php';
         <span class="navbar-brand">SAT-GO Cliente</span>
         <ul class="navbar-nav">
             <li class="nav-item">
-                <a class="nav-link active" onclick="showSection('facturas', this)">&#128196; Descarga de Facturas</a>
+                <a class="nav-link active" onclick="showSection('auth', this)">&#128273; Autenticaci&oacute;n</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('facturas', this)">&#128196; Descarga de Facturas</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" onclick="showSection('csf', this)">&#128203; Descarga de CSF</a>
@@ -33,8 +36,113 @@ require_once __DIR__ . '/config/api.php';
 
     <div class="container">
 
+        <!-- ======================== SECCIÓN: AUTENTICACIÓN ======================== -->
+        <div id="section-auth" class="page-section active">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Autenticaci&oacute;n SAT-GO</h2>
+                </div>
+                <div class="card-body">
+                    <div id="auth-alertContainer"></div>
+
+                    <!-- Paso 1: Crear / Obtener API Key -->
+                    <div class="row mb-3">
+                        <div class="col">
+                            <h5>Paso 1 &mdash; Obtener API Key</h5>
+                            <small class="text-muted">
+                                Ingresa el token que obtienes en el portal
+                                <a href="https://web.sat-go.com" target="_blank">web.sat-go.com</a>
+                                para crear o recuperar tu API Key permanente.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-10">
+                            <div class="form-group">
+                                <label class="form-label" for="auth_token_portal">Token del Portal</label>
+                                <textarea class="form-control" id="auth_token_portal" rows="2"
+                                          placeholder="Token obtenido desde web.sat-go.com"></textarea>
+                            </div>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-secondary btn-lg w-100" id="createKeyBtn"
+                                    onclick="createKey()">
+                                <span id="createKeyBtnText">Crear Key</span>
+                                <span id="createKeyBtnSpinner" class="hidden"><span class="spinner me-2"></span></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-label" for="auth_api_key">
+                                    API Key
+                                    <small class="text-muted">(permanente &mdash; p&eacute;gala aqu&iacute; si ya la tienes)</small>
+                                </label>
+                                <div style="display:flex; gap: 8px;">
+                                    <input type="text" class="form-control" id="auth_api_key"
+                                           placeholder="Tu API Key de SAT-GO">
+                                    <button type="button" class="btn btn-outline" onclick="copyApiKey()"
+                                            title="Copiar Key" style="white-space:nowrap;">&#128203; Copiar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Paso 2: Generar Token JWT -->
+                    <div class="row mb-3">
+                        <div class="col">
+                            <h5>Paso 2 &mdash; Generar Token JWT</h5>
+                            <small class="text-muted">
+                                Usa tu API Key para obtener un token JWT de corta duraci&oacute;n
+                                que se usar&aacute; en el resto de las operaciones.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col d-grid">
+                            <button type="button" class="btn btn-primary btn-lg" id="generarTokenBtn"
+                                    onclick="generarToken()">
+                                <span id="generarTokenBtnText">Generar Token JWT</span>
+                                <span id="generarTokenBtnSpinner" class="hidden"><span class="spinner me-2"></span>Generando...</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Resultado del token -->
+                    <div id="auth-tokenResult" style="display:none;">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label">Access Token (JWT)</label>
+                                    <div style="display:flex; gap: 8px;">
+                                        <textarea class="form-control" id="auth_access_token" rows="3" readonly></textarea>
+                                        <div style="display:flex; flex-direction:column; gap:4px;">
+                                            <button type="button" class="btn btn-outline" onclick="copyToken()"
+                                                    title="Copiar token">&#128203; Copiar</button>
+                                            <button type="button" class="btn btn-success" onclick="propagarToken()"
+                                                    title="Rellenar en todos los formularios">
+                                                &#10004; Usar en todos
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted mt-1" id="auth_token_info"></small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div><!-- /section-auth -->
+
         <!-- ======================== SECCIÓN: FACTURAS ======================== -->
-        <div id="section-facturas" class="page-section active">
+        <div id="section-facturas" class="page-section">
 
         <!-- Formulario de Consulta -->
         <div class="card">

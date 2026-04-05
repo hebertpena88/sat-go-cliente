@@ -38,6 +38,7 @@ let expandedRows = new Set();
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', function() {
+    initAuthForm();
     initForm();
     initCsfForm();
     initOcForm();
@@ -1115,4 +1116,163 @@ function decDisplayResult(data) {
     content.innerHTML = `
         <div class="alert alert-warning">Respuesta recibida. Revisa los detalles:</div>
         <pre style="background:#f8f9fa;padding:16px;border-radius:4px;overflow:auto;">${JSON.stringify(data, null, 2)}</pre>`;
+}
+
+// ============================================================
+// SECCIÓN: AUTENTICACIÓN
+// ============================================================
+
+function initAuthForm() {
+    // Permitir usar Enter en los campos de texto del auth
+    const tokenPortalEl = document.getElementById('auth_token_portal');
+    if (tokenPortalEl) {
+        tokenPortalEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); createKey(); }
+        });
+    }
+}
+
+/**
+ * Llama a /api/v1/Users/CreateKey con el token del portal y guarda la API Key resultante.
+ */
+async function createKey() {
+    let raw = document.getElementById('auth_token_portal').value.trim();
+    if (!raw) {
+        showAuthAlert('danger', 'Ingresa el token del portal web.sat-go.com');
+        return;
+    }
+
+    // Si se pega el JSON completo de la respuesta del portal, extraer tokens.access.value
+    let tokenPortal = raw;
+    try {
+        const parsed = JSON.parse(raw);
+        if (parsed?.tokens?.access?.value) {
+            tokenPortal = parsed.tokens.access.value;
+        }
+    } catch (_) { /* no es JSON, usar el valor tal cual */ }
+
+    const btn     = document.getElementById('createKeyBtn');
+    const btnText = document.getElementById('createKeyBtnText');
+    const spinner = document.getElementById('createKeyBtnSpinner');
+
+    btn.disabled = true;
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    hideAuthAlert();
+
+    try {
+        const fd = new FormData();
+        fd.append('action', 'createKey');
+        fd.append('token_portal', tokenPortal);
+
+        const response = await fetch('ajax/auth.php', { method: 'POST', body: fd });
+        const result   = await response.json();
+
+        if (result.success) {
+            document.getElementById('auth_api_key').value = result.key;
+            showAuthAlert('success', 'API Key obtenida. Ahora genera un token JWT en el Paso 2.');
+        } else {
+            const detail = result.raw_response ? `<br><small style="font-family:monospace;word-break:break-all;">${result.raw_response}</small>` : '';
+            showAuthAlert('danger', (result.error || 'Error al crear la API Key') + detail);
+        }
+    } catch (err) {
+        showAuthAlert('danger', 'Error inesperado: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+    }
+}
+
+/**
+ * Llama a /api/Auth/token con la API Key y muestra el token JWT resultante.
+ */
+async function generarToken() {
+    const apiKey = document.getElementById('auth_api_key').value.trim();
+    if (!apiKey) {
+        showAuthAlert('danger', 'Ingresa o genera una API Key primero (Paso 1)');
+        return;
+    }
+
+    const btn     = document.getElementById('generarTokenBtn');
+    const btnText = document.getElementById('generarTokenBtnText');
+    const spinner = document.getElementById('generarTokenBtnSpinner');
+
+    btn.disabled = true;
+    btnText.classList.add('hidden');
+    spinner.classList.remove('hidden');
+    hideAuthAlert();
+
+    try {
+        const fd = new FormData();
+        fd.append('action', 'generarToken');
+        fd.append('api_key', apiKey);
+
+        const response = await fetch('ajax/auth.php', { method: 'POST', body: fd });
+        const result   = await response.json();
+
+        if (result.success) {
+            document.getElementById('auth_access_token').value = result.access_token;
+            document.getElementById('auth-tokenResult').style.display = 'block';
+            document.getElementById('auth_token_info').textContent =
+                'Token generado. Haz clic en "Usar en todos" para rellenar los formularios automáticamente.';
+            showAuthAlert('success', 'Token JWT generado correctamente.');
+        } else {
+            const detail = result.raw_response ? `<br><small style="font-family:monospace;word-break:break-all;">${result.raw_response}</small>` : '';
+            showAuthAlert('danger', (result.error || 'Error al generar el token') + detail);
+        }
+    } catch (err) {
+        showAuthAlert('danger', 'Error inesperado: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btnText.classList.remove('hidden');
+        spinner.classList.add('hidden');
+    }
+}
+
+/**
+ * Propaga el token a todos los campos de autorización de los formularios.
+ */
+function propagarToken() {
+    const token = document.getElementById('auth_access_token').value.trim();
+    if (!token) return;
+
+    const campos = ['authorization', 'csf_authorization', 'oc_authorization', 'dec_authorization'];
+    campos.forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.value = token;
+    });
+
+    showAuthAlert('success', 'Token copiado a todos los formularios.');
+}
+
+function copyToken() {
+    const token = document.getElementById('auth_access_token').value.trim();
+    if (token) {
+        navigator.clipboard.writeText(token).then(function() {
+            showAuthAlert('success', 'Token copiado al portapapeles.');
+        });
+    }
+}
+
+function copyApiKey() {
+    const key = document.getElementById('auth_api_key').value.trim();
+    if (key) {
+        navigator.clipboard.writeText(key).then(function() {
+            showAuthAlert('success', 'API Key copiada al portapapeles.');
+        });
+    }
+}
+
+function showAuthAlert(type, message) {
+    const container = document.getElementById('auth-alertContainer');
+    container.innerHTML = `
+        <div class="alert alert-${type}">
+            ${message}
+            <button type="button" style="float:right;background:none;border:none;cursor:pointer;font-size:18px;" onclick="hideAuthAlert()">&times;</button>
+        </div>`;
+}
+
+function hideAuthAlert() {
+    document.getElementById('auth-alertContainer').innerHTML = '';
 }
