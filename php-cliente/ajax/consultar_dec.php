@@ -5,19 +5,17 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../services/DecService.php';
 
-// Verificar que sea una petición POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode([
-        'success' => false,
-        'error'   => 'Método no permitido',
-        'message' => 'Solo se permiten peticiones POST'
-    ]);
+    echo json_encode(['success' => false, 'error' => 'Método no permitido', 'message' => 'Solo se permiten peticiones POST']);
     exit;
 }
 
 try {
-    // Parámetros de la declaración
+    $metodo        = $_POST['dec_metodo']        ?? 'fiel';
+    $rfc           = $_POST['dec_rfc']           ?? '';
+    $authorization = $_POST['dec_authorization'] ?? '';
+
     $params = [
         'ejercicio'      => $_POST['dec_ejercicio']      ?? '',
         'mes'            => $_POST['dec_mes']            ?? '',
@@ -25,24 +23,11 @@ try {
         'request_id'     => $_POST['dec_request_id']     ?? ''
     ];
 
-    // Datos FIEL
-    $request = [
-        'rfc'           => $_POST['dec_rfc']           ?? '',
-        'authorization' => $_POST['dec_authorization'] ?? '',
-        'contrasena'    => $_POST['dec_contrasena']    ?? '',
-        'llave_privada' => $_FILES['dec_llave_privada'] ?? null,
-        'certificado'   => $_FILES['dec_certificado']   ?? null
-    ];
-
-    // Validar campos requeridos
-    if (empty($request['rfc'])) {
+    if (empty($rfc)) {
         throw new Exception('El RFC es requerido');
     }
-    if (empty($request['authorization'])) {
+    if (empty($authorization)) {
         throw new Exception('El token de autorización es requerido');
-    }
-    if (empty($request['contrasena'])) {
-        throw new Exception('La contraseña es requerida');
     }
     if (empty($params['ejercicio'])) {
         throw new Exception('El ejercicio es requerido');
@@ -54,15 +39,34 @@ try {
         throw new Exception('El tipo de documento es requerido');
     }
 
-    $resultado = DecService::descargarDecFiel($params, $request);
+    if ($metodo === 'ciec') {
+        $ciec = $_POST['dec_ciec'] ?? '';
+        if (empty($ciec)) {
+            throw new Exception('La CIEC es requerida');
+        }
+        $resultado = DecService::descargarDecCiec($params, [
+            'rfc'           => $rfc,
+            'authorization' => $authorization,
+            'ciec'          => $ciec
+        ]);
+
+    } else {
+        $contrasena = $_POST['dec_contrasena'] ?? '';
+        if (empty($contrasena)) {
+            throw new Exception('La contraseña de la FIEL es requerida');
+        }
+        $resultado = DecService::descargarDecFiel($params, [
+            'rfc'           => $rfc,
+            'authorization' => $authorization,
+            'contrasena'    => $contrasena,
+            'llave_privada' => $_FILES['dec_llave_privada'] ?? null,
+            'certificado'   => $_FILES['dec_certificado']   ?? null
+        ]);
+    }
 
     echo json_encode($resultado);
 
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'error'   => $e->getMessage(),
-        'message' => 'Error de validación'
-    ]);
+    echo json_encode(['success' => false, 'error' => $e->getMessage(), 'message' => 'Error de validación']);
 }

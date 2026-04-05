@@ -14,7 +14,9 @@ class ApiConfig
         'CONSULTAR_CSFFIEL' => '/Consultar/csffiel',
         'CONSULTAR_CSF'     => '/Consultar/csf',
         'CONSULTAR_OCFIEL'  => '/Consultar/ocfiel',
-        'CONSULTAR_DECFIEL' => '/Consultar/decfiel'
+        'CONSULTAR_OC'      => '/Consultar/oc',
+        'CONSULTAR_DECFIEL' => '/Consultar/decfiel',
+        'CONSULTAR_DEC'     => '/Consultar/dec'
     ];
 
     public const AUTH_ENDPOINTS = [
@@ -22,7 +24,7 @@ class ApiConfig
         'AUTH_TOKEN'  => '/api/Auth/token'
     ];
     
-    public const TIMEOUT = 30;
+    public const TIMEOUT = 120;
     
     public const DEFAULT_HEADERS = [
         'Accept' => '*/*',

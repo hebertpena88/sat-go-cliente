@@ -831,6 +831,30 @@ function initOcForm() {
 }
 
 /**
+ * Cambia el método de autenticación OC entre FIEL y CIEC
+ */
+function ocSetMetodo(metodo) {
+    document.getElementById('oc_metodo').value = metodo;
+
+    const fielFields = document.getElementById('oc-fiel-fields');
+    const ciecFields = document.getElementById('oc-ciec-fields');
+    const tabFiel    = document.getElementById('oc-tab-fiel');
+    const tabCiec    = document.getElementById('oc-tab-ciec');
+
+    if (metodo === 'ciec') {
+        fielFields.style.display = 'none';
+        ciecFields.style.display = '';
+        tabFiel.style.background = '#f8f9fa'; tabFiel.style.color = '#495057';
+        tabCiec.style.background = '#0d6efd'; tabCiec.style.color = '#fff';
+    } else {
+        fielFields.style.display = '';
+        ciecFields.style.display = 'none';
+        tabFiel.style.background = '#0d6efd'; tabFiel.style.color = '#fff';
+        tabCiec.style.background = '#f8f9fa'; tabCiec.style.color = '#495057';
+    }
+}
+
+/**
  * Envía el formulario de Opinión de Cumplimiento a la API
  */
 async function submitOcForm() {
@@ -977,6 +1001,30 @@ function initDecForm() {
         e.preventDefault();
         await submitDecForm();
     });
+}
+
+/**
+ * Cambia el método de autenticación Declaraciones entre FIEL y CIEC
+ */
+function decSetMetodo(metodo) {
+    document.getElementById('dec_metodo').value = metodo;
+
+    const fielFields = document.getElementById('dec-fiel-fields');
+    const ciecFields = document.getElementById('dec-ciec-fields');
+    const tabFiel    = document.getElementById('dec-tab-fiel');
+    const tabCiec    = document.getElementById('dec-tab-ciec');
+
+    if (metodo === 'ciec') {
+        fielFields.style.display = 'none';
+        ciecFields.style.display = '';
+        tabFiel.style.background = '#f8f9fa'; tabFiel.style.color = '#495057';
+        tabCiec.style.background = '#0d6efd'; tabCiec.style.color = '#fff';
+    } else {
+        fielFields.style.display = '';
+        ciecFields.style.display = 'none';
+        tabFiel.style.background = '#0d6efd'; tabFiel.style.color = '#fff';
+        tabCiec.style.background = '#f8f9fa'; tabCiec.style.color = '#495057';
+    }
 }
 
 /**

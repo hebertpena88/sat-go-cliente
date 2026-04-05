@@ -458,12 +458,26 @@ require_once __DIR__ . '/config/api.php';
 
                     <form id="ocForm" enctype="multipart/form-data">
 
+                        <!-- Toggle FIEL / CIEC -->
+                        <input type="hidden" id="oc_metodo" name="oc_metodo" value="fiel">
                         <div class="row mb-3">
                             <div class="col">
-                                <h5>Información FIEL</h5>
+                                <div style="display:inline-flex; border:1px solid #dee2e6; border-radius:6px; overflow:hidden;">
+                                    <button type="button" id="oc-tab-fiel"
+                                            style="padding:8px 20px; border:none; background:#0d6efd; color:#fff; cursor:pointer; font-size:14px;"
+                                            onclick="ocSetMetodo('fiel')">
+                                        &#128274; FIEL (e.firma)
+                                    </button>
+                                    <button type="button" id="oc-tab-ciec"
+                                            style="padding:8px 20px; border:none; background:#f8f9fa; color:#495057; cursor:pointer; font-size:14px; border-left:1px solid #dee2e6;"
+                                            onclick="ocSetMetodo('ciec')">
+                                        &#128272; CIEC
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
+                        <!-- RFC y Token (comunes) -->
                         <div class="row mb-3">
                             <div class="col-md-12">
                                 <div class="form-group">
@@ -485,28 +499,44 @@ require_once __DIR__ . '/config/api.php';
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="oc_llave_privada">Llave Privada (.key)</label>
-                                    <input type="file" class="form-control" id="oc_llave_privada"
-                                           name="oc_llave_privada" accept=".key">
+                        <!-- Campos exclusivos FIEL -->
+                        <div id="oc-fiel-fields">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="oc_llave_privada">Llave Privada (.key)</label>
+                                        <input type="file" class="form-control" id="oc_llave_privada"
+                                               name="oc_llave_privada" accept=".key">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="oc_certificado">Certificado (.cer)</label>
+                                        <input type="file" class="form-control" id="oc_certificado"
+                                               name="oc_certificado" accept=".cer">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="oc_contrasena">Contraseña de la Llave Privada</label>
+                                        <input type="password" class="form-control" id="oc_contrasena"
+                                               name="oc_contrasena"
+                                               value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>"
+                                               placeholder="Contraseña de la FIEL">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="oc_certificado">Certificado (.cer)</label>
-                                    <input type="file" class="form-control" id="oc_certificado"
-                                           name="oc_certificado" accept=".cer">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="oc_contrasena">Contraseña de la Llave Privada</label>
-                                    <input type="password" class="form-control" id="oc_contrasena"
-                                           name="oc_contrasena"
-                                           value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>"
-                                           placeholder="Contraseña de la FIEL" required>
+                        </div>
+
+                        <!-- Campos exclusivos CIEC -->
+                        <div id="oc-ciec-fields" style="display:none;">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label" for="oc_ciec">CIEC (Contraseña del SAT)</label>
+                                        <input type="password" class="form-control" id="oc_ciec"
+                                               name="oc_ciec" placeholder="Contraseña del portal del SAT (CIEC)">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -550,11 +580,26 @@ require_once __DIR__ . '/config/api.php';
 
                     <form id="decForm" enctype="multipart/form-data">
 
-                        <!-- Información FIEL -->
+                        <!-- Toggle FIEL / CIEC -->
+                        <input type="hidden" id="dec_metodo" name="dec_metodo" value="fiel">
                         <div class="row mb-3">
-                            <div class="col"><h5>Información FIEL</h5></div>
+                            <div class="col">
+                                <div style="display:inline-flex; border:1px solid #dee2e6; border-radius:6px; overflow:hidden;">
+                                    <button type="button" id="dec-tab-fiel"
+                                            style="padding:8px 20px; border:none; background:#0d6efd; color:#fff; cursor:pointer; font-size:14px;"
+                                            onclick="decSetMetodo('fiel')">
+                                        &#128274; FIEL (e.firma)
+                                    </button>
+                                    <button type="button" id="dec-tab-ciec"
+                                            style="padding:8px 20px; border:none; background:#f8f9fa; color:#495057; cursor:pointer; font-size:14px; border-left:1px solid #dee2e6;"
+                                            onclick="decSetMetodo('ciec')">
+                                        &#128272; CIEC
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
+                        <!-- RFC y Token (comunes) -->
                         <div class="row mb-3">
                             <div class="col-md-12">
                                 <div class="form-group">
@@ -576,28 +621,44 @@ require_once __DIR__ . '/config/api.php';
                             </div>
                         </div>
 
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="dec_llave_privada">Llave Privada (.key)</label>
-                                    <input type="file" class="form-control" id="dec_llave_privada"
-                                           name="dec_llave_privada" accept=".key">
+                        <!-- Campos exclusivos FIEL -->
+                        <div id="dec-fiel-fields">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="dec_llave_privada">Llave Privada (.key)</label>
+                                        <input type="file" class="form-control" id="dec_llave_privada"
+                                               name="dec_llave_privada" accept=".key">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="dec_certificado">Certificado (.cer)</label>
+                                        <input type="file" class="form-control" id="dec_certificado"
+                                               name="dec_certificado" accept=".cer">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="dec_contrasena">Contraseña de la Llave Privada</label>
+                                        <input type="password" class="form-control" id="dec_contrasena"
+                                               name="dec_contrasena"
+                                               value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>"
+                                               placeholder="Contraseña de la FIEL">
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="dec_certificado">Certificado (.cer)</label>
-                                    <input type="file" class="form-control" id="dec_certificado"
-                                           name="dec_certificado" accept=".cer">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label class="form-label" for="dec_contrasena">Contraseña de la Llave Privada</label>
-                                    <input type="password" class="form-control" id="dec_contrasena"
-                                           name="dec_contrasena"
-                                           value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>"
-                                           placeholder="Contraseña de la FIEL" required>
+                        </div>
+
+                        <!-- Campos exclusivos CIEC -->
+                        <div id="dec-ciec-fields" style="display:none;">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label" for="dec_ciec">CIEC (Contraseña del SAT)</label>
+                                        <input type="password" class="form-control" id="dec_ciec"
+                                               name="dec_ciec" placeholder="Contraseña del portal del SAT (CIEC)">
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -227,4 +227,125 @@ class DecService
             ];
         }
     }
+
+    /**
+     * Descarga una Declaración usando CIEC.
+     * Usa GET /api/v2/Consultar/dec con el header Secret y los mismos query params.
+     *
+     * @param array $params  ['ejercicio', 'mes', 'tipo_documento', 'request_id']
+     * @param array $request ['rfc', 'authorization', 'ciec']
+     * @return array Respuesta de la API
+     */
+    public static function descargarDecCiec(array $params, array $request): array
+    {
+        try {
+            self::log('INFO', 'Iniciando descarga Declaración (CIEC)', [
+                'rfc'            => $request['rfc'] ?? '',
+                'ejercicio'      => $params['ejercicio'] ?? '',
+                'mes'            => $params['mes'] ?? '',
+                'tipo_documento' => $params['tipo_documento'] ?? '',
+                'authorization'  => substr($request['authorization'] ?? '', 0, 20) . '...'
+            ]);
+
+            $query = http_build_query(array_filter([
+                'ejercicio'     => $params['ejercicio'],
+                'mes'           => $params['mes'],
+                'tipoDocumento' => $params['tipo_documento'],
+                'requestid'     => $params['request_id'] ?: null
+            ], fn($v) => $v !== null && $v !== ''));
+
+            $url = ApiConfig::BASE_URL . ApiConfig::ENDPOINTS['CONSULTAR_DEC'] . '?' . $query;
+            self::log('INFO', 'URL destino', $url);
+
+            $ch = curl_init();
+            curl_setopt_array($ch, [
+                CURLOPT_URL            => $url,
+                CURLOPT_HTTPGET        => true,
+                CURLOPT_HTTPHEADER     => [
+                    'RFC: '                  . $request['rfc'],
+                    'Authorization: Bearer ' . $request['authorization'],
+                    'Secret: '               . $request['ciec'],
+                    'Accept: */*',
+                    'User-Agent: PHP-SAT-Client/1.0',
+                    'Cache-Control: no-cache'
+                ],
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT        => ApiConfig::TIMEOUT,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_SSL_VERIFYHOST => false,
+                CURLOPT_HEADER         => true
+            ]);
+
+            $raw         = curl_exec($ch);
+            $http_code   = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $header_size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+            $curl_error  = curl_error($ch);
+            curl_close($ch);
+
+            self::log('INFO', 'Respuesta recibida (CIEC)', [
+                'http_code'  => $http_code,
+                'body_size'  => strlen($raw) - $header_size,
+                'curl_error' => $curl_error ?: null
+            ]);
+
+            if ($curl_error) {
+                return ['success' => false, 'error' => 'Error de conexión: ' . $curl_error, 'message' => 'Error al conectar con la API'];
+            }
+
+            $response_headers = substr($raw, 0, $header_size);
+            $body             = substr($raw, $header_size);
+
+            $content_type = 'application/octet-stream';
+            if (preg_match('/Content-Type:\s*([^\r\n]+)/i', $response_headers, $m)) {
+                $content_type = trim($m[1]);
+            }
+
+            $filename = 'declaracion.zip';
+            if (preg_match('/filename=([^;\r\n]+)/i', $response_headers, $m)) {
+                $filename = trim(trim($m[1]), '"');
+            }
+
+            if ($http_code >= 200 && $http_code < 300) {
+                self::log('INFO', 'Archivo (CIEC) recibido', ['filename' => $filename, 'bytes' => strlen($body)]);
+                return [
+                    'success'      => true,
+                    'is_zip'       => true,
+                    'zip_base64'   => base64_encode($body),
+                    'filename'     => $filename,
+                    'content_type' => $content_type,
+                    'message'      => 'Declaración descargada exitosamente'
+                ];
+            }
+
+            $data = json_decode($body, true);
+
+            if ($http_code === 403 && isset($data['success'])) {
+                self::log('ERROR', 'Límite excedido (403) CIEC', $data);
+                return [
+                    'success'       => false,
+                    'error_type'    => 'limit_exceeded',
+                    'error'         => $data['message'] ?? 'Límite excedido',
+                    'message'       => $data['message'] ?? 'Límite mensual excedido',
+                    'feature_code'  => $data['featureCode'] ?? null,
+                    'daily_limit'   => $data['dailyLimit'] ?? null,
+                    'monthly_limit' => $data['monthlyLimit'] ?? null,
+                    'daily_usage'   => $data['dailyUsage'] ?? null,
+                    'monthly_usage' => $data['monthlyUsage'] ?? null,
+                ];
+            }
+
+            $error_message = $data['message'] ?? (trim($body) !== '' ? trim($body) : 'Error HTTP ' . $http_code);
+            self::log('ERROR', 'Error HTTP (CIEC)', ['http_code' => $http_code, 'body' => substr($body, 0, 500)]);
+            return [
+                'success' => false,
+                'error'   => $error_message,
+                'message' => 'Error al descargar la declaración',
+                'data'    => $data
+            ];
+
+        } catch (Exception $e) {
+            self::log('ERROR', 'Excepción no controlada (CIEC)', ['message' => $e->getMessage()]);
+            return ['success' => false, 'error' => $e->getMessage(), 'message' => 'Error inesperado al descargar la declaración'];
+        }
+    }
 }
