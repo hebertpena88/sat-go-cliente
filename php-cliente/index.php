@@ -31,6 +31,12 @@ require_once __DIR__ . '/config/api.php';
             <li class="nav-item">
                 <a class="nav-link" onclick="showSection('dec', this)">&#128196; Declaraciones</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('imssoc', this)">&#127970; OC IMSS</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" onclick="showSection('infofiscal', this)">&#128196; Información Fiscal</a>
+            </li>
         </ul>
     </nav>
 
@@ -147,26 +153,39 @@ require_once __DIR__ . '/config/api.php';
         <!-- Formulario de Consulta -->
         <div class="card">
             <div class="card-header">
-                <h2>Consulta de Facturas FIEL</h2>
+                <h2>Consulta de Facturas</h2>
             </div>
             <div class="card-body">
-                <!-- Alert Container -->
                 <div id="alertContainer"></div>
 
                 <form id="consultaForm" enctype="multipart/form-data">
-                    <!-- Datos FIEL -->
+
+                    <!-- Toggle FIEL / CIEC -->
+                    <input type="hidden" id="fac_metodo" name="fac_metodo" value="fiel">
                     <div class="row mb-3">
                         <div class="col">
-                            <h5>Información FIEL</h5>
+                            <div style="display:inline-flex; border:1px solid #dee2e6; border-radius:6px; overflow:hidden;">
+                                <button type="button" id="fac-tab-fiel"
+                                        style="padding:8px 20px; border:none; background:#0d6efd; color:#fff; cursor:pointer; font-size:14px;"
+                                        onclick="facSetMetodo('fiel')">
+                                    &#128274; FIEL (e.firma)
+                                </button>
+                                <button type="button" id="fac-tab-ciec"
+                                        style="padding:8px 20px; border:none; background:#f8f9fa; color:#495057; cursor:pointer; font-size:14px; border-left:1px solid #dee2e6;"
+                                        onclick="facSetMetodo('ciec')">
+                                    &#128272; CIEC
+                                </button>
+                            </div>
                         </div>
                     </div>
 
+                    <!-- Campos comunes -->
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="form-label" for="rfc">RFC</label>
-                                <input type="text" class="form-control" id="rfc" name="rfc" 
-                                       value="<?= htmlspecialchars(FormDefaults::RFC) ?>" 
+                                <input type="text" class="form-control" id="rfc" name="rfc"
+                                       value="<?= htmlspecialchars(FormDefaults::RFC) ?>"
                                        placeholder="RFC del contribuyente" required>
                             </div>
                         </div>
@@ -176,7 +195,7 @@ require_once __DIR__ . '/config/api.php';
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label class="form-label" for="authorization">Token de Autorización</label>
-                                <textarea class="form-control" id="authorization" name="authorization" 
+                                <textarea class="form-control" id="authorization" name="authorization"
                                           rows="3" placeholder="Bearer token de autorización" required></textarea>
                             </div>
                         </div>
@@ -185,44 +204,15 @@ require_once __DIR__ . '/config/api.php';
                     <div class="row mb-3">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label class="form-label" for="request_id">Request ID (Opcional - para reusar sesión)</label>
-                                <input type="text" class="form-control" id="request_id" name="request_id" 
+                                <label class="form-label" for="request_id">Request ID <small class="text-muted">(Opcional)</small></label>
+                                <input type="text" class="form-control" id="request_id" name="request_id"
                                        placeholder="ID de request para mantener la sesión activa">
                                 <small class="form-text">Si tienes un Request ID de una consulta anterior, ingrésalo aquí para reusar la sesión.</small>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="form-label" for="llave_privada">Llave Privada (.key)</label>
-                                <input type="file" class="form-control" id="llave_privada" name="llave_privada" accept=".key">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="form-label" for="certificado">Certificado (.cer)</label>
-                                <input type="file" class="form-control" id="certificado" name="certificado" accept=".cer">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label class="form-label" for="contrasena">Contraseña de la Llave Privada</label>
-                                <input type="password" class="form-control" id="contrasena" name="contrasena" 
-                                       value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>" 
-                                       placeholder="Contraseña de la FIEL" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Parámetros de consulta -->
-                    <div class="row mb-3">
-                        <div class="col">
-                            <h5>Parámetros de Consulta</h5>
-                        </div>
-                    </div>
-
+                    <!-- Parámetros comunes -->
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <div class="form-group">
@@ -254,30 +244,104 @@ require_once __DIR__ . '/config/api.php';
                         </div>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-5">
-                            <div class="form-group">
-                                <label class="form-label" for="fecha_inicial">Fecha Inicial</label>
-                                <input type="datetime-local" class="form-control" id="fecha_inicial" name="fecha_inicial" 
-                                       value="<?= htmlspecialchars(FormDefaults::FECHA_INICIAL) ?>" step="1" required>
-                                <small class="form-text" id="fecha_inicial_preview">Formato enviado: </small>
+                    <!-- Campos exclusivos FIEL -->
+                    <div id="fac-fiel-fields">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="llave_privada">Llave Privada (.key)</label>
+                                    <input type="file" class="form-control" id="llave_privada" name="llave_privada" accept=".key">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="certificado">Certificado (.cer)</label>
+                                    <input type="file" class="form-control" id="certificado" name="certificado" accept=".cer">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="contrasena">Contraseña de la Llave Privada</label>
+                                    <input type="password" class="form-control" id="contrasena" name="contrasena"
+                                           value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>"
+                                           placeholder="Contraseña de la FIEL">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-5">
-                            <div class="form-group">
-                                <label class="form-label" for="fecha_final">Fecha Final</label>
-                                <input type="datetime-local" class="form-control" id="fecha_final" name="fecha_final" 
-                                       value="<?= htmlspecialchars(FormDefaults::FECHA_FINAL) ?>" step="1" required>
-                                <small class="form-text" id="fecha_final_preview">Formato enviado: </small>
+                        <div class="row mb-3">
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label class="form-label" for="fecha_inicial">Fecha Inicial</label>
+                                    <input type="datetime-local" class="form-control" id="fecha_inicial" name="fecha_inicial"
+                                           value="<?= htmlspecialchars(FormDefaults::FECHA_INICIAL) ?>" step="1">
+                                    <small class="form-text" id="fecha_inicial_preview">Formato enviado: </small>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="form-group">
+                                    <label class="form-label" for="fecha_final">Fecha Final</label>
+                                    <input type="datetime-local" class="form-control" id="fecha_final" name="fecha_final"
+                                           value="<?= htmlspecialchars(FormDefaults::FECHA_FINAL) ?>" step="1">
+                                    <small class="form-text" id="fecha_final_preview">Formato enviado: </small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label class="form-label">Descargar Comprobantes</label>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="descarga_comprobantes"
+                                               name="descarga_comprobantes" <?= FormDefaults::DESCARGA_COMPROBANTES ? 'checked' : '' ?>>
+                                        <label class="form-check-label" for="descarga_comprobantes">Sí</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-2">
-                            <div class="form-group">
-                                <label class="form-label">Descargar Comprobantes</label>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="descarga_comprobantes" 
-                                           name="descarga_comprobantes" <?= FormDefaults::DESCARGA_COMPROBANTES ? 'checked' : '' ?>>
-                                    <label class="form-check-label" for="descarga_comprobantes">Sí</label>
+                    </div>
+
+                    <!-- Campos exclusivos CIEC -->
+                    <div id="fac-ciec-fields" style="display:none;">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="ciec">CIEC (Contraseña del SAT)</label>
+                                    <input type="password" class="form-control" id="ciec" name="ciec"
+                                           placeholder="Contraseña del portal del SAT (CIEC)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="fac_anio">Año</label>
+                                    <input type="number" class="form-control" id="fac_anio" name="fac_anio"
+                                           placeholder="Ej. 2025" min="2000" max="2099">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="fac_mes">Mes</label>
+                                    <select class="form-select" id="fac_mes" name="fac_mes">
+                                        <option value="">-- Todos --</option>
+                                        <option value="1">1 - Enero</option>
+                                        <option value="2">2 - Febrero</option>
+                                        <option value="3">3 - Marzo</option>
+                                        <option value="4">4 - Abril</option>
+                                        <option value="5">5 - Mayo</option>
+                                        <option value="6">6 - Junio</option>
+                                        <option value="7">7 - Julio</option>
+                                        <option value="8">8 - Agosto</option>
+                                        <option value="9">9 - Septiembre</option>
+                                        <option value="10">10 - Octubre</option>
+                                        <option value="11">11 - Noviembre</option>
+                                        <option value="12">12 - Diciembre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-label" for="fac_dia">Día <small class="text-muted">(Opcional)</small></label>
+                                    <input type="number" class="form-control" id="fac_dia" name="fac_dia"
+                                           placeholder="0 = todos" min="0" max="31">
                                 </div>
                             </div>
                         </div>
@@ -742,6 +806,212 @@ require_once __DIR__ . '/config/api.php';
             </div>
 
         </div><!-- /section-dec -->
+
+        <!-- ======================== SECCIÓN: OC IMSS ======================== -->
+        <!-- Generated by Copilot - Sección Opinión de Cumplimiento IMSS -->
+        <div id="section-imssoc" class="page-section">
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Opinión de Cumplimiento IMSS (imssoc)</h2>
+                </div>
+                <div class="card-body">
+
+                    <div id="imssoc-alertContainer"></div>
+
+                    <p class="text-muted">
+                        Se conecta directo con el IMSS y obtiene la opinión de cumplimiento usando solo la <strong>CIEC</strong> del contribuyente.
+                    </p>
+
+                    <form id="imssocForm">
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="imssoc_rfc">RFC</label>
+                                    <input type="text" class="form-control" id="imssoc_rfc" name="imssoc_rfc"
+                                           value="<?= htmlspecialchars(FormDefaults::RFC) ?>"
+                                           placeholder="RFC del contribuyente" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="imssoc_authorization">Token de Autorización</label>
+                                    <textarea class="form-control" id="imssoc_authorization" name="imssoc_authorization"
+                                              rows="3" placeholder="Bearer token de autorización" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="imssoc_ciec">CIEC (Contraseña del SAT)</label>
+                                    <input type="password" class="form-control" id="imssoc_ciec" name="imssoc_ciec"
+                                           placeholder="Contraseña del portal del SAT (CIEC)" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="imssocSubmitBtn">
+                                    <span id="imssocBtnText">Consultar OC IMSS</span>
+                                    <span id="imssocBtnSpinner" class="hidden"><span class="spinner me-2"></span>Consultando...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resultado IMSSOC -->
+            <div class="card mt-4" id="imssocResultadoCard" style="display: none;">
+                <div class="card-header">
+                    <h2>Resultado de la Consulta</h2>
+                </div>
+                <div class="card-body">
+                    <div id="imssocResultadoContent"></div>
+                </div>
+            </div>
+
+        </div><!-- /section-imssoc -->
+
+        <!-- ======================== SECCIÓN: INFORMACIÓN FISCAL ======================== -->
+        <!-- Generated by Copilot - Sección Información Fiscal -->
+        <div id="section-infofiscal" class="page-section">
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Información Fiscal</h2>
+                </div>
+                <div class="card-body">
+
+                    <div id="if-alertContainer"></div>
+
+                    <form id="ifForm" enctype="multipart/form-data">
+
+                        <!-- Toggle FIEL / CIEC -->
+                        <input type="hidden" id="if_metodo" name="if_metodo" value="fiel">
+                        <div class="row mb-3">
+                            <div class="col">
+                                <div style="display:inline-flex; border:1px solid #dee2e6; border-radius:6px; overflow:hidden;">
+                                    <button type="button" id="if-tab-fiel"
+                                            style="padding:8px 20px; border:none; background:#0d6efd; color:#fff; cursor:pointer; font-size:14px;"
+                                            onclick="ifSetMetodo('fiel')">
+                                        &#128274; FIEL (e.firma)
+                                    </button>
+                                    <button type="button" id="if-tab-ciec"
+                                            style="padding:8px 20px; border:none; background:#f8f9fa; color:#495057; cursor:pointer; font-size:14px; border-left:1px solid #dee2e6;"
+                                            onclick="ifSetMetodo('ciec')">
+                                        &#128272; CIEC
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos comunes -->
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="if_rfc">RFC</label>
+                                    <input type="text" class="form-control" id="if_rfc" name="if_rfc"
+                                           value="<?= htmlspecialchars(FormDefaults::RFC) ?>"
+                                           placeholder="RFC del contribuyente" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="if_authorization">Token de Autorización</label>
+                                    <textarea class="form-control" id="if_authorization" name="if_authorization"
+                                              rows="3" placeholder="Bearer token de autorización" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-label" for="if_request_id">Request ID <small class="text-muted">(Opcional)</small></label>
+                                    <input type="text" class="form-control" id="if_request_id" name="if_request_id"
+                                           placeholder="ID de request para mantener la sesión activa">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos exclusivos FIEL -->
+                        <div id="if-fiel-fields">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="if_llave_privada">Llave Privada (.key)</label>
+                                        <input type="file" class="form-control" id="if_llave_privada"
+                                               name="if_llave_privada" accept=".key">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="if_certificado">Certificado (.cer)</label>
+                                        <input type="file" class="form-control" id="if_certificado"
+                                               name="if_certificado" accept=".cer">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="if_contrasena">Contraseña de la Llave Privada</label>
+                                        <input type="password" class="form-control" id="if_contrasena"
+                                               name="if_contrasena"
+                                               value="<?= htmlspecialchars(FormDefaults::CONTRASENA) ?>"
+                                               placeholder="Contraseña de la FIEL">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campos exclusivos CIEC -->
+                        <div id="if-ciec-fields" style="display:none;">
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="form-label" for="if_ciec">CIEC (Contraseña del SAT)</label>
+                                        <input type="password" class="form-control" id="if_ciec"
+                                               name="if_ciec" placeholder="Contraseña del portal del SAT (CIEC)">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col d-grid">
+                                <button type="submit" class="btn btn-primary btn-lg" id="ifSubmitBtn">
+                                    <span id="ifBtnText">Consultar Información Fiscal</span>
+                                    <span id="ifBtnSpinner" class="hidden"><span class="spinner me-2"></span>Consultando...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resultado Información Fiscal -->
+            <div class="card mt-4" id="ifResultadoCard" style="display: none;">
+                <div class="card-header">
+                    <h2>Resultado de la Consulta</h2>
+                </div>
+                <div class="card-body">
+                    <div id="ifResultadoContent"></div>
+                </div>
+            </div>
+
+        </div><!-- /section-infofiscal -->
 
         <!-- Modal de Error -->
         <div class="modal-backdrop" id="errorModal">

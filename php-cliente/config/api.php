@@ -11,12 +11,16 @@ class ApiConfig
 
     public const ENDPOINTS = [
         'CONSULTAR_FACFIEL' => '/Consultar/facfiel',
+        'CONSULTAR_FAC'     => '/Consultar/fac',
         'CONSULTAR_CSFFIEL' => '/Consultar/csffiel',
         'CONSULTAR_CSF'     => '/Consultar/csf',
         'CONSULTAR_OCFIEL'  => '/Consultar/ocfiel',
         'CONSULTAR_OC'      => '/Consultar/oc',
         'CONSULTAR_DECFIEL' => '/Consultar/decfiel',
-        'CONSULTAR_DEC'     => '/Consultar/dec'
+        'CONSULTAR_DEC'     => '/Consultar/dec',
+        'CONSULTAR_IMSSOC'          => '/Consultar/imssoc',
+        'CONSULTAR_INFOFISCALFIEL'  => '/Consultar/informacionfiscalfiel',
+        'CONSULTAR_INFOFISCAL'      => '/Consultar/informacionfiscal'
     ];
 
     public const AUTH_ENDPOINTS = [
