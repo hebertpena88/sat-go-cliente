@@ -47,9 +47,14 @@ def consultar_facturas(rfc: str, authorization: str, contrasena: str,
             'Authorization': f'Bearer {authorization}',
             'Accept':        'application/json',
         }
+        logger.info('>> FACTURAS FIEL REQUEST | URL=%s | headers=%s | files=%s',
+                    url,
+                    {k: (v[:20] + '...' if k == 'Authorization' else v) for k, v in headers.items()},
+                    {'llavePrivada': llave_privada.filename, 'Certificado': certificado.filename})
 
         response = requests.post(url, headers=headers, data=data, files=files, timeout=TIMEOUT, verify=False)
-        logger.info('Respuesta facturas | status=%s', response.status_code)
+        logger.info('<< FACTURAS FIEL RESPONSE | status=%s | headers=%s',
+                    response.status_code, dict(response.headers))
 
         if response.ok:
             try:
@@ -57,12 +62,72 @@ def consultar_facturas(rfc: str, authorization: str, contrasena: str,
             except Exception:
                 json_data = response.text
             req_id = response.headers.get('RequestId') or (json_data.get('requestId') if isinstance(json_data, dict) else None)
+            logger.debug('<< FACTURAS FIEL BODY | request_id=%s | data=%s', req_id, str(json_data)[:500])
             return {'success': True, 'data': json_data, 'request_id': req_id, 'message': 'Consulta exitosa'}
 
         error_text = response.text
-        logger.error('Error facturas | status=%s | body=%s', response.status_code, error_text[:500])
+        logger.error('<< FACTURAS FIEL ERROR | status=%s | body=%s', response.status_code, error_text[:500])
         return {'success': False, 'error': error_text or f'Error {response.status_code}'}
 
     except Exception as exc:
         logger.exception('Excepción inesperada al consultar facturas')
+        return {'success': False, 'error': str(exc)}
+
+
+def consultar_facturas_ciec(rfc: str, authorization: str, ciec: str,
+                           fecha_inicial: str = '',
+                           tipo: str = 'recibidos',
+                           estatus_factura: int = -1,
+                           tipo_busqueda: int = 1) -> dict:
+    """
+    Consulta facturas del SAT usando CIEC (GET).
+
+    Extrae anio/mes/dia de fecha_inicial (formato YYYY-MM-DD ...).
+    """
+    try:
+        anio, mes, dia = fecha_inicial[:10].split('-') if fecha_inicial else ('', '', '')
+    except ValueError:
+        anio = mes = dia = ''
+
+    params = {
+        'tipoBusqueda':   tipo_busqueda,
+        'estatusFactura': estatus_factura,
+        'anio':           anio,
+        'mes':            mes,
+        'dia':            dia,
+        'tipo':           tipo,
+    }
+    url = BASE_URL + ENDPOINTS['CONSULTAR_FAC']
+    logger.info('Consultando facturas CIEC | RFC=%s | URL=%s', rfc, url)
+
+    try:
+        headers = {
+            'RFC':           rfc,
+            'Authorization': f'Bearer {authorization}',
+            'Secret':        ciec,
+            'Accept':        'application/json',
+        }
+        logger.info('>> FACTURAS CIEC REQUEST | URL=%s | params=%s | headers=%s',
+                    url, params,
+                    {k: (v[:20] + '...' if k == 'Authorization' else ('***' if k == 'Secret' else v)) for k, v in headers.items()})
+
+        response = requests.get(url, headers=headers, params=params, timeout=TIMEOUT, verify=False)
+        logger.info('<< FACTURAS CIEC RESPONSE | status=%s | headers=%s',
+                    response.status_code, dict(response.headers))
+
+        if response.ok:
+            try:
+                json_data = response.json()
+            except Exception:
+                json_data = response.text
+            req_id = response.headers.get('RequestId') or (json_data.get('requestId') if isinstance(json_data, dict) else None)
+            logger.debug('<< FACTURAS CIEC BODY | request_id=%s | data=%s', req_id, str(json_data)[:500])
+            return {'success': True, 'data': json_data, 'request_id': req_id, 'message': 'Consulta exitosa'}
+
+        error_text = response.text
+        logger.error('<< FACTURAS CIEC ERROR | status=%s | body=%s', response.status_code, error_text[:500])
+        return {'success': False, 'error': error_text or f'Error {response.status_code}'}
+
+    except Exception as exc:
+        logger.exception('Excepción inesperada al consultar facturas CIEC')
         return {'success': False, 'error': str(exc)}

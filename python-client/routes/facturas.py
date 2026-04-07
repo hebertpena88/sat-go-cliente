@@ -8,35 +8,54 @@ bp = Blueprint('facturas', __name__, url_prefix='/api/facturas')
 
 @bp.post('/consultar')
 def consultar():
-    """Consulta facturas y devuelve el resultado en JSON."""
+    """Consulta facturas. Soporta FIEL (POST multipart) y CIEC (GET con Secret header)."""
     rfc           = request.form.get('rfc', '').strip()
     authorization = request.form.get('authorization', '').strip()
-    contrasena    = request.form.get('contrasena', '').strip()
-    llave_privada = request.files.get('llavePrivada')
-    certificado   = request.files.get('certificado')
+    metodo        = request.form.get('metodo', 'fiel').strip().lower()
 
-    if not all([rfc, authorization, contrasena, llave_privada, certificado]):
-        return jsonify({'success': False, 'error': 'Todos los campos FIEL son requeridos'}), 400
+    if not all([rfc, authorization]):
+        return jsonify({'success': False, 'error': 'RFC y Token son requeridos'}), 400
 
-    # Parámetros opcionales con valores por defecto
-    today     = datetime.now()
-    ago_30    = today - timedelta(days=30)
-    fmt       = '%Y-%m-%d %H:%M:%S'
+    today  = datetime.now()
+    ago_30 = today - timedelta(days=30)
+    fmt    = '%Y-%m-%d %H:%M:%S'
 
-    resultado = factura_service.consultar_facturas(
-        rfc=rfc,
-        authorization=authorization,
-        contrasena=contrasena,
-        llave_privada=llave_privada,
-        certificado=certificado,
-        tipo_busqueda=int(request.form.get('tipo_busqueda', 1)),
-        estatus_factura=int(request.form.get('estatus_factura', -1)),
-        fecha_inicial=request.form.get('fecha_inicial', ago_30.strftime(fmt)),
-        fecha_final=request.form.get('fecha_final', today.strftime(fmt)),
-        tipo=request.form.get('tipo', 'recibidos'),
-        descarga_comprobantes=request.form.get('descarga_comprobantes', 'false').lower() == 'true',
-        request_id=request.form.get('request_id', ''),
-    )
+    if metodo == 'ciec':
+        ciec = request.form.get('ciec', '').strip()
+        if not ciec:
+            return jsonify({'success': False, 'error': 'La Clave CIEC es requerida'}), 400
+
+        resultado = factura_service.consultar_facturas_ciec(
+            rfc=rfc,
+            authorization=authorization,
+            ciec=ciec,
+            fecha_inicial=request.form.get('fecha_inicial', ago_30.strftime(fmt)),
+            tipo=request.form.get('tipo', 'recibidos'),
+            estatus_factura=int(request.form.get('estatus_factura', -1)),
+            tipo_busqueda=int(request.form.get('tipo_busqueda', 1)),
+        )
+    else:
+        contrasena    = request.form.get('contrasena', '').strip()
+        llave_privada = request.files.get('llavePrivada')
+        certificado   = request.files.get('certificado')
+
+        if not all([contrasena, llave_privada, certificado]):
+            return jsonify({'success': False, 'error': 'Contraseña, llave privada y certificado son requeridos para FIEL'}), 400
+
+        resultado = factura_service.consultar_facturas(
+            rfc=rfc,
+            authorization=authorization,
+            contrasena=contrasena,
+            llave_privada=llave_privada,
+            certificado=certificado,
+            tipo_busqueda=int(request.form.get('tipo_busqueda', 1)),
+            estatus_factura=int(request.form.get('estatus_factura', -1)),
+            fecha_inicial=request.form.get('fecha_inicial', ago_30.strftime(fmt)),
+            fecha_final=request.form.get('fecha_final', today.strftime(fmt)),
+            tipo=request.form.get('tipo', 'recibidos'),
+            descarga_comprobantes=request.form.get('descarga_comprobantes', 'false').lower() == 'true',
+            request_id=request.form.get('request_id', ''),
+        )
 
     if resultado['success']:
         return jsonify({
