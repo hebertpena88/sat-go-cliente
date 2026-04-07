@@ -34,22 +34,66 @@ def descargar_csf(rfc: str, authorization: str, contrasena: str, llave_privada, 
             'Authorization': f'Bearer {authorization}',
             'Accept':        '*/*',
         }
+        logger.info('>> CSF FIEL REQUEST | URL=%s | headers=%s | files=%s',
+                    url,
+                    {k: (v[:20] + '...' if k == 'Authorization' else v) for k, v in headers.items()},
+                    {'llavePrivada': llave_privada.filename, 'Certificado': certificado.filename})
 
         response = requests.post(url, headers=headers, data=data, files=files, timeout=TIMEOUT, verify=False)
-        logger.info('Respuesta CSF | status=%s | content-type=%s', response.status_code, response.headers.get('Content-Type'))
+        logger.info('<< CSF FIEL RESPONSE | status=%s | content-type=%s | headers=%s',
+                    response.status_code, response.headers.get('Content-Type'), dict(response.headers))
 
         if response.ok:
             content_type = response.headers.get('Content-Type', 'application/pdf')
             file_name = _extract_filename(response, 'ConstanciaSituacionFiscal.pdf')
+            logger.debug('<< CSF FIEL PDF | file=%s | size=%d bytes', file_name, len(response.content))
             return {'success': True, 'pdf_bytes': response.content, 'file_name': file_name, 'content_type': content_type}
 
         error_text = response.text
-        logger.error('Error CSF | status=%s | body=%s', response.status_code, error_text[:500])
+        logger.error('<< CSF FIEL ERROR | status=%s | body=%s', response.status_code, error_text[:500])
         return {'success': False, 'error': error_text or f'Error {response.status_code}'}
 
     except Exception as exc:
         logger.exception('Excepción inesperada al descargar CSF')
         return {'success': False, 'error': str(exc)}
+
+
+def descargar_csf_ciec(rfc: str, authorization: str, ciec: str) -> dict:
+    """
+    Descarga la Constancia de Situación Fiscal usando CIEC (GET).
+    """
+    url = BASE_URL + ENDPOINTS['CONSULTAR_CSF']
+    logger.info('Iniciando descarga CSF CIEC | RFC=%s | URL=%s', rfc, url)
+
+    try:
+        headers = {
+            'RFC':           rfc,
+            'Authorization': f'Bearer {authorization}',
+            'Secret':        ciec,
+            'Accept':        '*/*',
+        }
+        logger.info('>> CSF CIEC REQUEST | URL=%s | headers=%s',
+                    url,
+                    {k: (v[:20] + '...' if k == 'Authorization' else ('***' if k == 'Secret' else v)) for k, v in headers.items()})
+
+        response = requests.get(url, headers=headers, timeout=TIMEOUT, verify=False)
+        logger.info('<< CSF CIEC RESPONSE | status=%s | content-type=%s | headers=%s',
+                    response.status_code, response.headers.get('Content-Type'), dict(response.headers))
+
+        if response.ok:
+            content_type = response.headers.get('Content-Type', 'application/pdf')
+            file_name = _extract_filename(response, 'ConstanciaSituacionFiscal.pdf')
+            logger.debug('<< CSF CIEC PDF | file=%s | size=%d bytes', file_name, len(response.content))
+            return {'success': True, 'pdf_bytes': response.content, 'file_name': file_name, 'content_type': content_type}
+
+        error_text = response.text
+        logger.error('<< CSF CIEC ERROR | status=%s | body=%s', response.status_code, error_text[:500])
+        return {'success': False, 'error': error_text or f'Error {response.status_code}'}
+
+    except Exception as exc:
+        logger.exception('Excepción inesperada al descargar CSF CIEC')
+        return {'success': False, 'error': str(exc)}
+
 
 
 def _extract_filename(response: requests.Response, default: str) -> str:

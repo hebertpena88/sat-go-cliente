@@ -8,17 +8,28 @@ bp = Blueprint('csf', __name__, url_prefix='/api/csf')
 
 @bp.post('/descargar')
 def descargar():
-    """Descarga la Constancia de Situación Fiscal y devuelve el PDF en base64."""
+    """Descarga la Constancia de Situación Fiscal. Soporta FIEL y CIEC."""
     rfc           = request.form.get('rfc', '').strip()
     authorization = request.form.get('authorization', '').strip()
-    contrasena    = request.form.get('contrasena', '').strip()
-    llave_privada = request.files.get('llavePrivada')
-    certificado   = request.files.get('certificado')
+    metodo        = request.form.get('metodo', 'fiel').strip().lower()
 
-    if not all([rfc, authorization, contrasena, llave_privada, certificado]):
-        return jsonify({'success': False, 'error': 'Todos los campos FIEL son requeridos'}), 400
+    if not all([rfc, authorization]):
+        return jsonify({'success': False, 'error': 'RFC y Token son requeridos'}), 400
 
-    resultado = csf_service.descargar_csf(rfc, authorization, contrasena, llave_privada, certificado)
+    if metodo == 'ciec':
+        ciec = request.form.get('ciec', '').strip()
+        if not ciec:
+            return jsonify({'success': False, 'error': 'La Clave CIEC es requerida'}), 400
+        resultado = csf_service.descargar_csf_ciec(rfc, authorization, ciec)
+    else:
+        contrasena    = request.form.get('contrasena', '').strip()
+        llave_privada = request.files.get('llavePrivada')
+        certificado   = request.files.get('certificado')
+
+        if not all([contrasena, llave_privada, certificado]):
+            return jsonify({'success': False, 'error': 'Contraseña, llave privada y certificado son requeridos para FIEL'}), 400
+
+        resultado = csf_service.descargar_csf(rfc, authorization, contrasena, llave_privada, certificado)
 
     if resultado['success']:
         return jsonify({
