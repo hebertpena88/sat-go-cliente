@@ -3,17 +3,12 @@ using SatGoCliente.Models;
 
 namespace SatGoCliente.Services
 {
-    /// <summary>
-    /// Interface para el servicio de Opinión de Cumplimiento
-    /// </summary>
     public interface IOpinionCumplimientoService
     {
         Task<OpinionCumplimientoResponse> DescargarOpinionAsync(OpinionCumplimientoViewModel model);
+        Task<OpinionCumplimientoResponse> DescargarOpinionCiecAsync(ConsultaCiecViewModel model);
     }
 
-    /// <summary>
-    /// Respuesta del servicio de Opinión de Cumplimiento
-    /// </summary>
     public class OpinionCumplimientoResponse
     {
         public bool Success { get; set; }

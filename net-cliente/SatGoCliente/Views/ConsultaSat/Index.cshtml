@@ -10,38 +10,68 @@
             @* Área de mensajes dinámica *@
             <div id="alert-container"></div>
 
-            @* Card de datos FIEL compartidos *@
+            @* Card de credenciales compartidas *@
             <div class="card shadow mb-4">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-key"></i> Datos FIEL (Compartidos)
-                    </h5>
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-key"></i> Credenciales (Compartidas)</h5>
+                    @* Toggle FIEL / CIEC *@
+                    <div class="btn-group btn-group-sm" role="group">
+                        <input type="radio" class="btn-check" name="metodo-global" id="metodo-fiel" value="fiel" checked />
+                        <label class="btn btn-outline-light" for="metodo-fiel">
+                            <i class="bi bi-file-earmark-lock2"></i> FIEL
+                        </label>
+                        <input type="radio" class="btn-check" name="metodo-global" id="metodo-ciec" value="ciec" />
+                        <label class="btn btn-outline-warning" for="metodo-ciec">
+                            <i class="bi bi-shield-shaded"></i> CIEC
+                        </label>
+                    </div>
                 </div>
                 <div class="card-body">
+                    @* Campos comunes *@
                     <div class="row mb-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="shared-rfc" class="form-label">RFC *</label>
                             <input type="text" class="form-control" id="shared-rfc" placeholder="Ingrese RFC" />
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="shared-token" class="form-label">Token de Autorización *</label>
                             <input type="text" class="form-control" id="shared-token" placeholder="Token de API" />
                         </div>
-                        <div class="col-md-4">
-                            <label for="shared-password" class="form-label">Contraseña FIEL *</label>
-                            <input type="password" class="form-control" id="shared-password" placeholder="Contraseña de la FIEL" />
+                    </div>
+
+                    @* Sección FIEL *@
+                    <div id="seccion-fiel">
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label for="shared-password" class="form-label">Contraseña FIEL *</label>
+                                <input type="password" class="form-control" id="shared-password" placeholder="Contraseña de la FIEL" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="shared-key" class="form-label">Llave Privada (.key) *</label>
+                                <input type="file" class="form-control" id="shared-key" accept=".key" />
+                                <small class="text-muted" id="key-filename"></small>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="shared-cert" class="form-label">Certificado (.cer) *</label>
+                                <input type="file" class="form-control" id="shared-cert" accept=".cer" />
+                                <small class="text-muted" id="cert-filename"></small>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="shared-key" class="form-label">Llave Privada (.key) *</label>
-                            <input type="file" class="form-control" id="shared-key" accept=".key" />
-                            <small class="text-muted" id="key-filename"></small>
+
+                    @* Sección CIEC *@
+                    <div id="seccion-ciec" style="display:none;">
+                        <div class="alert alert-warning py-2 mb-3">
+                            <i class="bi bi-info-circle"></i>
+                            Con <strong>CIEC</strong> solo necesitas tu clave de acceso al portal del SAT — sin archivos .key ni .cer.
                         </div>
-                        <div class="col-md-6">
-                            <label for="shared-cert" class="form-label">Certificado (.cer) *</label>
-                            <input type="file" class="form-control" id="shared-cert" accept=".cer" />
-                            <small class="text-muted" id="cert-filename"></small>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="shared-ciec" class="form-label">Clave CIEC *</label>
+                                <input type="password" class="form-control" id="shared-ciec" placeholder="Clave CIEC del SAT" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -50,33 +80,120 @@
             @* Pestañas de funcionalidad *@
             <ul class="nav nav-tabs" id="satTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="facturas-tab" data-bs-toggle="tab" 
+                    <button class="nav-link active" id="auth-tab" data-bs-toggle="tab"
+                            data-bs-target="#auth" type="button" role="tab">
+                        <i class="bi bi-shield-lock"></i> Autenticación
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="facturas-tab" data-bs-toggle="tab"
                             data-bs-target="#facturas" type="button" role="tab">
                         <i class="bi bi-file-earmark-text"></i> Consultar Facturas
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="opinion-tab" data-bs-toggle="tab" 
+                    <button class="nav-link" id="opinion-tab" data-bs-toggle="tab"
                             data-bs-target="#opinion" type="button" role="tab">
                         <i class="bi bi-file-earmark-check"></i> Opinión de Cumplimiento
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="csf-tab" data-bs-toggle="tab" 
+                    <button class="nav-link" id="csf-tab" data-bs-toggle="tab"
                             data-bs-target="#csf" type="button" role="tab">
                         <i class="bi bi-file-earmark-person"></i> CSF
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="dec-tab" data-bs-toggle="tab"
+                            data-bs-target="#dec" type="button" role="tab">
+                        <i class="bi bi-receipt"></i> Declaraciones
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="infofiscal-tab" data-bs-toggle="tab"
+                            data-bs-target="#infofiscal" type="button" role="tab">
+                        <i class="bi bi-building"></i> Información Fiscal
                     </button>
                 </li>
             </ul>
 
             <div class="tab-content" id="satTabsContent">
-                @* Tab: Consultar Facturas *@
-                <div class="tab-pane fade show active" id="facturas" role="tabpanel">
+
+                @* ================================================================
+                   Tab: Autenticación
+                   ================================================================ *@
+                <div class="tab-pane fade show active" id="auth" role="tabpanel">
+                    <div class="card border-top-0 rounded-top-0">
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <h6 class="fw-bold mb-1">
+                                    <span class="badge bg-primary me-2">1</span>Generar API Key
+                                </h6>
+                                <p class="text-muted small mb-2">
+                                    Ingresa el token que obtuviste al iniciar sesión en web.sat-go.com.
+                                    Tu API Key es permanente; solo necesitas generarla una vez.
+                                </p>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="auth-token-portal"
+                                           placeholder="Token del portal web.sat-go.com" />
+                                    <button class="btn btn-primary" type="button" id="btn-crear-key">
+                                        <i class="bi bi-key"></i> Generar Key
+                                    </button>
+                                </div>
+                                <div id="auth-key-result" style="display:none;">
+                                    <label class="form-label fw-semibold">API Key obtenida:</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control font-monospace" id="auth-api-key-display" readonly />
+                                        <button class="btn btn-outline-secondary" type="button" id="btn-copy-key" title="Copiar">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <div class="mb-3">
+                                <h6 class="fw-bold mb-1">
+                                    <span class="badge bg-success me-2">2</span>Generar Token de Acceso
+                                </h6>
+                                <p class="text-muted small mb-2">
+                                    Usa tu API Key para obtener un JWT de corta duración.
+                                    Una vez generado, puedes aplicarlo a todas las secciones.
+                                </p>
+                                <div class="input-group mb-2">
+                                    <input type="text" class="form-control" id="auth-api-key-input"
+                                           placeholder="API Key (se llena automáticamente del paso 1)" />
+                                    <button class="btn btn-success" type="button" id="btn-generar-token">
+                                        <i class="bi bi-lightning-charge"></i> Generar Token
+                                    </button>
+                                </div>
+                                <div id="auth-token-result" style="display:none;">
+                                    <label class="form-label fw-semibold">Token de acceso (JWT):</label>
+                                    <div class="input-group mb-2">
+                                        <input type="text" class="form-control font-monospace" id="auth-access-token-display" readonly />
+                                        <button class="btn btn-outline-secondary" type="button" id="btn-copy-token" title="Copiar">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </div>
+                                    <button class="btn btn-warning w-100" type="button" id="btn-usar-token">
+                                        <i class="bi bi-arrow-up-circle"></i> Usar este token en todas las secciones
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ================================================================
+                   Tab: Consultar Facturas
+                   ================================================================ *@
+                <div class="tab-pane fade" id="facturas" role="tabpanel">
                     <div class="card border-top-0 rounded-top-0">
                         <div class="card-body">
                             <div class="mb-3">
                                 <label for="RequestId" class="form-label">Request ID (opcional)</label>
-                                <input type="text" class="form-control" id="RequestId" 
+                                <input type="text" class="form-control" id="RequestId"
                                        placeholder="Para descargar resultados de una consulta previa" />
                                 <small class="text-muted">Si tiene un Request ID previo, ingréselo para descargar los resultados</small>
                             </div>
@@ -84,28 +201,55 @@
                             <hr />
                             <h6 class="text-muted mb-3">O realice una nueva consulta:</h6>
 
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="FechaInicial" class="form-label">Fecha Inicial</label>
-                                    <input type="date" class="form-control" id="FechaInicial" />
+                            @* Parámetros FIEL: fechas *@
+                            <div id="params-fiel-facturas">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="FechaInicial" class="form-label">Fecha Inicial</label>
+                                        <input type="date" class="form-control" id="FechaInicial" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="FechaFinal" class="form-label">Fecha Final</label>
+                                        <input type="date" class="form-control" id="FechaFinal" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="FechaFinal" class="form-label">Fecha Final</label>
-                                    <input type="date" class="form-control" id="FechaFinal" />
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="RfcEmisor" class="form-label">RFC Emisor (opcional)</label>
+                                        <input type="text" class="form-control" id="RfcEmisor" placeholder="RFC del emisor" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="RfcReceptor" class="form-label">RFC Receptor (opcional)</label>
+                                        <input type="text" class="form-control" id="RfcReceptor" placeholder="RFC del receptor" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="RfcEmisor" class="form-label">RFC Emisor (opcional)</label>
-                                    <input type="text" class="form-control" id="RfcEmisor" placeholder="RFC del emisor" />
+                            @* Parámetros CIEC: año/mes/día *@
+                            <div id="params-ciec-facturas" style="display:none;">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <label for="ciec-anio" class="form-label">Año (opcional)</label>
+                                        <input type="number" class="form-control" id="ciec-anio" placeholder="ej. 2024" min="2000" max="2099" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="ciec-mes" class="form-label">Mes (opcional)</label>
+                                        <input type="number" class="form-control" id="ciec-mes" placeholder="1-12" min="1" max="12" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="ciec-dia" class="form-label">Día (opcional)</label>
+                                        <input type="number" class="form-control" id="ciec-dia" placeholder="1-31" min="1" max="31" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label for="RfcReceptor" class="form-label">RFC Receptor (opcional)</label>
-                                    <input type="text" class="form-control" id="RfcReceptor" placeholder="RFC del receptor" />
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label for="ciec-uuid" class="form-label">UUID (opcional)</label>
+                                        <input type="text" class="form-control" id="ciec-uuid" placeholder="UUID de la factura" />
+                                    </div>
                                 </div>
                             </div>
 
+                            @* Parámetros comunes *@
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="TipoSolicitud" class="form-label">Tipo de Solicitud</label>
@@ -129,13 +273,12 @@
 
                             <div class="d-grid">
                                 <button type="button" class="btn btn-primary btn-lg" id="btn-consultar-facturas">
-                                    <i class="bi bi-search"></i> Consultar Facturas
+                                    <i class="bi bi-search"></i> <span id="lbl-btn-facturas">Consultar Facturas (FIEL)</span>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
-                    @* Área de resultados de facturas *@
+
                     <div id="resultados-facturas" class="mt-4" style="display: none;">
                         <div class="card shadow">
                             <div class="card-header bg-info text-white">
@@ -148,44 +291,190 @@
                     </div>
                 </div>
 
-                @* Tab: Opinión de Cumplimiento *@
+                @* ================================================================
+                   Tab: Opinión de Cumplimiento
+                   ================================================================ *@
                 <div class="tab-pane fade" id="opinion" role="tabpanel">
                     <div class="card border-top-0 rounded-top-0">
-                        <div class="card-body">
-                            <div class="text-center py-4">
-                                <i class="bi bi-file-earmark-pdf display-1 text-success"></i>
-                                <h4 class="mt-3">Descargar Opinión de Cumplimiento</h4>
-                                <p class="text-muted">
-                                    Complete los datos FIEL arriba y haga clic en el botón para descargar 
-                                    su Opinión de Cumplimiento en formato PDF.
-                                </p>
+                        <div class="card-body text-center py-4">
+                            <i class="bi bi-file-earmark-pdf display-1 text-success"></i>
+                            <h4 class="mt-3">Descargar Opinión de Cumplimiento</h4>
+                            <p class="text-muted mb-4">
+                                Descarga tu Opinión de Cumplimiento en formato PDF usando el método seleccionado.
+                            </p>
+                            <div class="d-flex justify-content-center gap-3">
                                 <button type="button" class="btn btn-success btn-lg" id="btn-descargar-opinion">
-                                    <i class="bi bi-download"></i> Descargar Opinión de Cumplimiento
+                                    <i class="bi bi-download"></i> <span id="lbl-btn-opinion">Descargar OC (FIEL)</span>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                @* Tab: Constancia de Situación Fiscal *@
+                @* ================================================================
+                   Tab: CSF
+                   ================================================================ *@
                 <div class="tab-pane fade" id="csf" role="tabpanel">
                     <div class="card border-top-0 rounded-top-0">
-                        <div class="card-body">
-                            <div class="text-center py-4">
-                                <i class="bi bi-file-earmark-person display-1 text-primary"></i>
-                                <h4 class="mt-3">Descargar Constancia de Situación Fiscal (CSF)</h4>
-                                <p class="text-muted">
-                                    La Constancia de Situación Fiscal (CSF) es un documento oficial emitido por el SAT<br />
-                                    que contiene información sobre su situación fiscal actual.
-                                </p>
+                        <div class="card-body text-center py-4">
+                            <i class="bi bi-file-earmark-person display-1 text-primary"></i>
+                            <h4 class="mt-3">Descargar Constancia de Situación Fiscal (CSF)</h4>
+                            <p class="text-muted mb-4">
+                                Descarga tu Constancia de Situación Fiscal en formato PDF usando el método seleccionado.
+                            </p>
+                            <div class="d-flex justify-content-center gap-3">
                                 <button type="button" class="btn btn-primary btn-lg" id="btn-descargar-csf">
-                                    <i class="bi bi-download"></i> Descargar CSF
+                                    <i class="bi bi-download"></i> <span id="lbl-btn-csf">Descargar CSF (FIEL)</span>
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                @* ================================================================
+                   Tab: Declaraciones
+                   ================================================================ *@
+                <div class="tab-pane fade" id="dec" role="tabpanel">
+                    <div class="card border-top-0 rounded-top-0">
+                        <div class="card-body">
+                            <p class="text-muted small mb-3">
+                                Descarga declaraciones realizadas y declaraciones de pagos del SAT.
+                                Con <strong>FIEL</strong> puedes especificar el tipo de documento (declaración o pago).
+                                Con <strong>CIEC</strong> se obtienen todas las declaraciones del período.
+                            </p>
+
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="dec-ejercicio" class="form-label">Ejercicio *</label>
+                                    <input type="number" class="form-control" id="dec-ejercicio"
+                                           placeholder="ej. 2024" min="2000" max="2099" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="dec-mes" class="form-label">Mes *</label>
+                                    <select class="form-select" id="dec-mes">
+                                        <option value="0">Todo el año</option>
+                                        <option value="1">Enero</option>
+                                        <option value="2">Febrero</option>
+                                        <option value="3">Marzo</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Mayo</option>
+                                        <option value="6">Junio</option>
+                                        <option value="7">Julio</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Septiembre</option>
+                                        <option value="10">Octubre</option>
+                                        <option value="11">Noviembre</option>
+                                        <option value="12">Diciembre</option>
+                                    </select>
+                                </div>
+                                @* tipoDocumento solo para FIEL *@
+                                <div class="col-md-4" id="dec-tipo-doc-group">
+                                    <label for="dec-tipo-documento" class="form-label">Tipo de Documento</label>
+                                    <select class="form-select" id="dec-tipo-documento">
+                                        <option value="declaracion">Declaración</option>
+                                        <option value="pago">Pago</option>
+                                    </select>
+                                    <small class="text-muted">Solo disponible con FIEL</small>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="dec-request-id" class="form-label">Request ID (opcional)</label>
+                                <input type="text" class="form-control" id="dec-request-id"
+                                       placeholder="Reutiliza una sesión previa para acelerar la consulta" />
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-dark btn-lg" id="btn-descargar-dec">
+                                    <i class="bi bi-download"></i>
+                                    <span id="lbl-btn-dec">Descargar Declaraciones (FIEL)</span>
+                                </button>
+                            </div>
+
+                            @* Resultado: muestra el RequestId devuelto y botón de descarga *@
+                            <div id="dec-result" class="mt-3" style="display:none;">
+                                <div id="dec-result-content"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
+
+                @* ================================================================
+                   Tab: Información Fiscal
+                   ================================================================ *@
+                <div class="tab-pane fade" id="infofiscal" role="tabpanel">
+                    <div class="card border-top-0 rounded-top-0">
+                        <div class="card-body">
+                            <p class="text-muted small mb-3">
+                                Obtiene la información fiscal del contribuyente registrada en el SAT
+                                (actividades económicas, obligaciones, domicilio fiscal, entre otros).
+                            </p>
+
+                            <div class="mb-3">
+                                <label for="if-request-id" class="form-label">Request ID (opcional)</label>
+                                <input type="text" class="form-control" id="if-request-id"
+                                       placeholder="Reutiliza una sesión previa para acelerar la consulta" />
+                                <small class="text-muted">Si realizaste una consulta previa, pega el Request ID aquí.</small>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-secondary btn-lg" id="btn-consultar-if">
+                                    <i class="bi bi-building"></i>
+                                    <span id="lbl-btn-if">Consultar Información Fiscal (FIEL)</span>
+                                </button>
+                            </div>
+
+                            <div id="if-result" class="mt-4" style="display:none;">
+                                <div class="card shadow-sm">
+                                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0"><i class="bi bi-info-circle"></i> Información Fiscal</h6>
+                                        <div id="if-request-id-badge"></div>
+                                    </div>
+                                    <div class="card-body p-0">
+                                        <pre id="if-result-content" class="bg-light p-3 mb-0 rounded-bottom"
+                                             style="max-height: 500px; overflow-y: auto; font-size: 0.8rem;"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            @* ================================================================
+               Panel de Trazas / Logs
+               ================================================================ *@
+            <div class="card shadow mt-4 mb-4">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center"
+                     style="cursor:pointer;" data-bs-toggle="collapse" data-bs-target="#log-panel">
+                    <h6 class="mb-0"><i class="bi bi-terminal"></i> Trazas de peticiones</h6>
+                    <div class="d-flex align-items-center gap-2" onclick="event.stopPropagation();">
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" id="log-auto-refresh" />
+                            <label class="form-check-label text-white small" for="log-auto-refresh">Auto</label>
+                        </div>
+                        <button class="btn btn-sm btn-outline-light" id="btn-refresh-logs" title="Actualizar">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" id="btn-clear-logs" title="Limpiar">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="collapse show" id="log-panel">
+                    <div class="card-body p-0">
+                        <div id="log-container" style="max-height: 320px; overflow-y: auto; font-family: monospace; font-size: 0.8rem;">
+                            <div class="text-muted text-center py-3">
+                                <i class="bi bi-hourglass"></i> Las trazas aparecerán aquí cuando realices una consulta.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -205,241 +494,579 @@
 </div>
 
 @section Scripts {
-    <script>
-        // Generated by Copilot
-        (function() {
-            'use strict';
-            
-            // Referencias a elementos
-            const sharedRfc = document.getElementById('shared-rfc');
-            const sharedToken = document.getElementById('shared-token');
-            const sharedPassword = document.getElementById('shared-password');
-            const sharedKey = document.getElementById('shared-key');
-            const sharedCert = document.getElementById('shared-cert');
-            const alertContainer = document.getElementById('alert-container');
-            const loadingModal = new bootstrap.Modal(document.getElementById('loadingModal'));
-            
-            // Almacenamiento de archivos en memoria
-            let keyFile = null;
-            let certFile = null;
-            
-            // Inicializar fechas
-            const today = new Date();
-            const thirtyDaysAgo = new Date(today);
-            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-            
-            document.getElementById('FechaInicial').value = thirtyDaysAgo.toISOString().split('T')[0];
-            document.getElementById('FechaFinal').value = today.toISOString().split('T')[0];
-            
-            // Cargar datos guardados de localStorage
-            function loadSavedData() {
-                const savedRfc = localStorage.getItem('satgo_rfc');
-                const savedToken = localStorage.getItem('satgo_token');
-                const savedPassword = localStorage.getItem('satgo_password');
-                
-                if (savedRfc) sharedRfc.value = savedRfc;
-                if (savedToken) sharedToken.value = savedToken;
-                if (savedPassword) sharedPassword.value = savedPassword;
-            }
-            
-            // Guardar datos en localStorage
-            function saveData() {
-                localStorage.setItem('satgo_rfc', sharedRfc.value);
-                localStorage.setItem('satgo_token', sharedToken.value);
-                localStorage.setItem('satgo_password', sharedPassword.value);
-            }
-            
-            // Escuchar cambios en campos de texto
-            sharedRfc.addEventListener('input', saveData);
-            sharedToken.addEventListener('input', saveData);
-            sharedPassword.addEventListener('input', saveData);
-            
-            // Capturar archivos seleccionados
-            sharedKey.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    keyFile = e.target.files[0];
-                    document.getElementById('key-filename').textContent = '✓ ' + keyFile.name;
-                }
+<script>
+// Generated by Copilot
+(function () {
+    'use strict';
+
+    // ----------------------------------------------------------------
+    // Referencias DOM
+    // ----------------------------------------------------------------
+    const sharedRfc      = document.getElementById('shared-rfc');
+    const sharedToken    = document.getElementById('shared-token');
+    const sharedPassword = document.getElementById('shared-password');
+    const sharedCiec     = document.getElementById('shared-ciec');
+    const sharedKey      = document.getElementById('shared-key');
+    const sharedCert     = document.getElementById('shared-cert');
+    const alertContainer = document.getElementById('alert-container');
+    const loadingModal   = new bootstrap.Modal(document.getElementById('loadingModal'));
+
+    let keyFile  = null;
+    let certFile = null;
+    let metodo   = 'fiel'; // 'fiel' | 'ciec'
+
+    // ----------------------------------------------------------------
+    // Toggle FIEL / CIEC
+    // ----------------------------------------------------------------
+    document.querySelectorAll('input[name="metodo-global"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+            metodo = this.value;
+            const esFiel = metodo === 'fiel';
+
+            document.getElementById('seccion-fiel').style.display  = esFiel ? '' : 'none';
+            document.getElementById('seccion-ciec').style.display  = esFiel ? 'none' : '';
+
+            document.getElementById('params-fiel-facturas').style.display = esFiel ? '' : 'none';
+            document.getElementById('params-ciec-facturas').style.display = esFiel ? 'none' : '';
+
+            // tipoDocumento solo disponible con FIEL
+            document.getElementById('dec-tipo-doc-group').style.display = esFiel ? '' : 'none';
+
+            const sufijo = esFiel ? 'FIEL' : 'CIEC';
+            document.getElementById('lbl-btn-facturas').textContent = `Consultar Facturas (${sufijo})`;
+            document.getElementById('lbl-btn-opinion').textContent  = `Descargar OC (${sufijo})`;
+            document.getElementById('lbl-btn-csf').textContent      = `Descargar CSF (${sufijo})`;
+            document.getElementById('lbl-btn-dec').textContent      = `Descargar Declaraciones (${sufijo})`;
+            document.getElementById('lbl-btn-if').textContent       = `Consultar Información Fiscal (${sufijo})`;
+        });
+    });
+
+    // ----------------------------------------------------------------
+    // LocalStorage
+    // ----------------------------------------------------------------
+    function loadSavedData() {
+        const r = localStorage.getItem('satgo_rfc');
+        const t = localStorage.getItem('satgo_token');
+        const p = localStorage.getItem('satgo_password');
+        const c = localStorage.getItem('satgo_ciec');
+        if (r) sharedRfc.value      = r;
+        if (t) sharedToken.value    = t;
+        if (p) sharedPassword.value = p;
+        if (c) sharedCiec.value     = c;
+    }
+
+    function saveData() {
+        localStorage.setItem('satgo_rfc',      sharedRfc.value);
+        localStorage.setItem('satgo_token',    sharedToken.value);
+        localStorage.setItem('satgo_password', sharedPassword.value);
+        localStorage.setItem('satgo_ciec',     sharedCiec.value);
+    }
+
+    sharedRfc.addEventListener('input', saveData);
+    sharedToken.addEventListener('input', saveData);
+    sharedPassword.addEventListener('input', saveData);
+    sharedCiec.addEventListener('input', saveData);
+
+    // ----------------------------------------------------------------
+    // Archivos FIEL
+    // ----------------------------------------------------------------
+    sharedKey.addEventListener('change', function (e) {
+        if (e.target.files.length > 0) {
+            keyFile = e.target.files[0];
+            document.getElementById('key-filename').textContent = '✓ ' + keyFile.name;
+        }
+    });
+
+    sharedCert.addEventListener('change', function (e) {
+        if (e.target.files.length > 0) {
+            certFile = e.target.files[0];
+            document.getElementById('cert-filename').textContent = '✓ ' + certFile.name;
+        }
+    });
+
+    // ----------------------------------------------------------------
+    // Helpers UI
+    // ----------------------------------------------------------------
+    function showAlert(type, message) {
+        alertContainer.innerHTML = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>`;
+    }
+
+    function validateFiel() {
+        if (!sharedRfc.value || !sharedToken.value || !sharedPassword.value) {
+            showAlert('danger', '<strong>Error:</strong> Complete RFC, token y contraseña FIEL');
+            return false;
+        }
+        if (!keyFile || !certFile) {
+            showAlert('danger', '<strong>Error:</strong> Seleccione los archivos .key y .cer');
+            return false;
+        }
+        return true;
+    }
+
+    function validateCiec() {
+        if (!sharedRfc.value || !sharedToken.value || !sharedCiec.value) {
+            showAlert('danger', '<strong>Error:</strong> Complete RFC, token y clave CIEC');
+            return false;
+        }
+        return true;
+    }
+
+    function createFielFormData() {
+        const fd = new FormData();
+        fd.append('Rfc',          sharedRfc.value);
+        fd.append('Authorization', sharedToken.value);
+        fd.append('Contrasena',   sharedPassword.value);
+        fd.append('LlavePrivada', keyFile);
+        fd.append('Certificado',  certFile);
+        return fd;
+    }
+
+    function ciecBody(extra = {}) {
+        return JSON.stringify({
+            rfc:           sharedRfc.value,
+            authorization: sharedToken.value,
+            ciec:          sharedCiec.value,
+            ...extra
+        });
+    }
+
+    function downloadPdf(result) {
+        const link = document.createElement('a');
+        link.href     = 'data:' + result.contentType + ';base64,' + result.pdfBase64;
+        link.download = result.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    // ----------------------------------------------------------------
+    // Inicializar fechas
+    // ----------------------------------------------------------------
+    const today        = new Date();
+    const thirtyAgo    = new Date(today);
+    thirtyAgo.setDate(thirtyAgo.getDate() - 30);
+    document.getElementById('FechaInicial').value = thirtyAgo.toISOString().split('T')[0];
+    document.getElementById('FechaFinal').value   = today.toISOString().split('T')[0];
+
+    // ----------------------------------------------------------------
+    // Facturas
+    // ----------------------------------------------------------------
+    document.getElementById('btn-consultar-facturas').addEventListener('click', async function () {
+        if (metodo === 'fiel') {
+            if (!validateFiel()) return;
+
+            const fd = createFielFormData();
+            fd.append('RequestId',       document.getElementById('RequestId').value);
+            fd.append('FechaInicial',    document.getElementById('FechaInicial').value);
+            fd.append('FechaFinal',      document.getElementById('FechaFinal').value);
+            fd.append('RfcEmisor',       document.getElementById('RfcEmisor').value);
+            fd.append('RfcReceptor',     document.getElementById('RfcReceptor').value);
+            fd.append('TipoSolicitud',   document.getElementById('TipoSolicitud').value);
+            fd.append('TipoComprobante', document.getElementById('TipoComprobante').value);
+
+            document.getElementById('loading-text').textContent = 'Consultando facturas (FIEL)...';
+            loadingModal.show();
+
+            try {
+                const res  = await fetch('/ConsultaSat/ConsultarFacturasAjax', { method: 'POST', body: fd });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success) { showAlert('success', `<strong>Éxito:</strong> ${data.message}`); displayFacturasResults(data); }
+                else              { showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`); }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+
+        } else {
+            if (!validateCiec()) return;
+
+            document.getElementById('loading-text').textContent = 'Consultando facturas (CIEC)...';
+            loadingModal.show();
+
+            const body = ciecBody({
+                tipo:           'recibidos',
+                tipoBusqueda:   1,
+                estatusFactura: -1,
+                anio:           document.getElementById('ciec-anio').value  || null,
+                mes:            document.getElementById('ciec-mes').value   || null,
+                dia:            document.getElementById('ciec-dia').value   || null,
+                uuid:           document.getElementById('ciec-uuid').value  || null,
+                requestId:      document.getElementById('RequestId').value  || null
             });
-            
-            sharedCert.addEventListener('change', function(e) {
-                if (e.target.files.length > 0) {
-                    certFile = e.target.files[0];
-                    document.getElementById('cert-filename').textContent = '✓ ' + certFile.name;
+
+            try {
+                const res  = await fetch('/ConsultaSat/ConsultarFacturasCiecAjax', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success) { showAlert('success', `<strong>Éxito:</strong> ${data.message}`); displayFacturasResults(data); }
+                else              { showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`); }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+        }
+    });
+
+    function displayFacturasResults(result) {
+        const container = document.getElementById('resultados-facturas');
+        const content   = document.getElementById('facturas-content');
+        let html = '';
+        if (result.requestId) html += `<div class="alert alert-info"><strong>Request ID:</strong> ${result.requestId}</div>`;
+        if (result.data)      html += `<pre class="bg-light p-3 rounded" style="max-height:400px;overflow-y:auto;">${JSON.stringify(result.data, null, 2)}</pre>`;
+        else if (result.message) html += `<p>${result.message}</p>`;
+        content.innerHTML    = html;
+        container.style.display = 'block';
+    }
+
+    // ----------------------------------------------------------------
+    // Opinión de Cumplimiento
+    // ----------------------------------------------------------------
+    document.getElementById('btn-descargar-opinion').addEventListener('click', async function () {
+        if (metodo === 'fiel') {
+            if (!validateFiel()) return;
+            document.getElementById('loading-text').textContent = 'Descargando OC (FIEL)...';
+            loadingModal.show();
+            try {
+                const res  = await fetch('/ConsultaSat/DescargarOpinionAjax', { method: 'POST', body: createFielFormData() });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success && data.pdfBase64) { downloadPdf(data); showAlert('success', '<strong>Éxito:</strong> Opinión descargada correctamente'); }
+                else { showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`); }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+        } else {
+            if (!validateCiec()) return;
+            document.getElementById('loading-text').textContent = 'Descargando OC (CIEC)...';
+            loadingModal.show();
+            try {
+                const res  = await fetch('/ConsultaSat/DescargarOpinionCiecAjax', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: ciecBody() });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success && data.pdfBase64) { downloadPdf(data); showAlert('success', '<strong>Éxito:</strong> Opinión descargada correctamente'); }
+                else { showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`); }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+        }
+    });
+
+    // ----------------------------------------------------------------
+    // CSF
+    // ----------------------------------------------------------------
+    document.getElementById('btn-descargar-csf').addEventListener('click', async function () {
+        if (metodo === 'fiel') {
+            if (!validateFiel()) return;
+            document.getElementById('loading-text').textContent = 'Descargando CSF (FIEL)...';
+            loadingModal.show();
+            try {
+                const res  = await fetch('/ConsultaSat/DescargarCsfAjax', { method: 'POST', body: createFielFormData() });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success && data.pdfBase64) { downloadPdf(data); showAlert('success', '<strong>Éxito:</strong> CSF descargada correctamente'); }
+                else { showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`); }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+        } else {
+            if (!validateCiec()) return;
+            document.getElementById('loading-text').textContent = 'Descargando CSF (CIEC)...';
+            loadingModal.show();
+            try {
+                const res  = await fetch('/ConsultaSat/DescargarCsfCiecAjax', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: ciecBody() });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success && data.pdfBase64) { downloadPdf(data); showAlert('success', '<strong>Éxito:</strong> CSF descargada correctamente'); }
+                else { showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`); }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+        }
+    });
+
+    // ----------------------------------------------------------------
+    // Autenticación
+    // ----------------------------------------------------------------
+    const savedApiKey = localStorage.getItem('satgo_api_key');
+    if (savedApiKey) {
+        document.getElementById('auth-api-key-input').value   = savedApiKey;
+        document.getElementById('auth-api-key-display').value = savedApiKey;
+        document.getElementById('auth-key-result').style.display = 'block';
+    }
+
+    document.getElementById('btn-crear-key').addEventListener('click', async function () {
+        const tokenPortal = document.getElementById('auth-token-portal').value.trim();
+        if (!tokenPortal) { showAlert('danger', '<strong>Error:</strong> Ingresa el token del portal'); return; }
+        document.getElementById('loading-text').textContent = 'Generando API Key...';
+        loadingModal.show();
+        try {
+            const res  = await fetch('/Auth/CrearKey', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tokenPortal }) });
+            const data = await res.json();
+            loadingModal.hide();
+            if (data.success && data.key) {
+                document.getElementById('auth-api-key-display').value = data.key;
+                document.getElementById('auth-api-key-input').value   = data.key;
+                document.getElementById('auth-key-result').style.display = 'block';
+                localStorage.setItem('satgo_api_key', data.key);
+                showAlert('success', '<strong>Éxito:</strong> API Key obtenida.');
+            } else { showAlert('danger', `<strong>Error:</strong> ${data.error || 'No se pudo obtener la API Key'}`); }
+        } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+        finally { setTimeout(refreshLogs, 500); }
+    });
+
+    document.getElementById('btn-copy-key').addEventListener('click', function () {
+        const val = document.getElementById('auth-api-key-display').value;
+        if (val) { navigator.clipboard.writeText(val); this.innerHTML = '<i class="bi bi-clipboard-check"></i>'; setTimeout(() => { this.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 1500); }
+    });
+
+    document.getElementById('btn-generar-token').addEventListener('click', async function () {
+        const apiKey = document.getElementById('auth-api-key-input').value.trim();
+        if (!apiKey) { showAlert('danger', '<strong>Error:</strong> Ingresa la API Key'); return; }
+        document.getElementById('loading-text').textContent = 'Generando token...';
+        loadingModal.show();
+        try {
+            const res  = await fetch('/Auth/GenerarToken', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ apiKey }) });
+            const data = await res.json();
+            loadingModal.hide();
+            if (data.success && data.accessToken) {
+                document.getElementById('auth-access-token-display').value = data.accessToken;
+                document.getElementById('auth-token-result').style.display = 'block';
+                showAlert('success', '<strong>Éxito:</strong> Token generado.');
+            } else { showAlert('danger', `<strong>Error:</strong> ${data.error || 'No se pudo generar el token'}`); }
+        } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+        finally { setTimeout(refreshLogs, 500); }
+    });
+
+    document.getElementById('btn-copy-token').addEventListener('click', function () {
+        const val = document.getElementById('auth-access-token-display').value;
+        if (val) { navigator.clipboard.writeText(val); this.innerHTML = '<i class="bi bi-clipboard-check"></i>'; setTimeout(() => { this.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 1500); }
+    });
+
+    document.getElementById('btn-usar-token').addEventListener('click', function () {
+        const token = document.getElementById('auth-access-token-display').value;
+        if (token) { sharedToken.value = token; saveData(); showAlert('success', '<strong>Listo:</strong> Token aplicado en todas las secciones.'); }
+    });
+
+    // ----------------------------------------------------------------
+    // Declaraciones
+    // ----------------------------------------------------------------
+
+    // Pre-llenar ejercicio con el año actual
+    document.getElementById('dec-ejercicio').value = new Date().getFullYear();
+
+    document.getElementById('btn-descargar-dec').addEventListener('click', async function () {
+        const ejercicio = parseInt(document.getElementById('dec-ejercicio').value);
+        const mes       = parseInt(document.getElementById('dec-mes').value);
+
+        if (!ejercicio || ejercicio < 2000) {
+            showAlert('danger', '<strong>Error:</strong> Ingresa un ejercicio fiscal válido (ej. 2024)');
+            return;
+        }
+
+        if (metodo === 'fiel') {
+            if (!validateFiel()) return;
+
+            const fd = createFielFormData();
+            fd.append('Ejercicio',     ejercicio);
+            fd.append('Mes',           mes);
+            fd.append('TipoDocumento', document.getElementById('dec-tipo-documento').value);
+            const rid = document.getElementById('dec-request-id').value.trim();
+            if (rid) fd.append('RequestId', rid);
+
+            document.getElementById('loading-text').textContent = 'Descargando declaraciones (FIEL)...';
+            loadingModal.show();
+
+            try {
+                const res  = await fetch('/ConsultaSat/DescargarDecFielAjax', { method: 'POST', body: fd });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success && data.fileBase64) {
+                    downloadFile(data);
+                    showDecResult(data);
+                    showAlert('success', '<strong>Éxito:</strong> Declaración descargada correctamente');
+                } else {
+                    showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`);
                 }
-            });
-            
-            // Mostrar alerta
-            function showAlert(type, message) {
-                alertContainer.innerHTML = `
-                    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                        ${message}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                `;
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+
+        } else {
+            if (!validateCiec()) return;
+
+            document.getElementById('loading-text').textContent = 'Descargando declaraciones (CIEC)...';
+            loadingModal.show();
+
+            try {
+                const res  = await fetch('/ConsultaSat/DescargarDecCiecAjax', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        rfc:           sharedRfc.value,
+                        authorization: sharedToken.value,
+                        ciec:          sharedCiec.value,
+                        ejercicio,
+                        mes,
+                        requestId: document.getElementById('dec-request-id').value.trim() || null
+                    })
+                });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success && data.fileBase64) {
+                    downloadFile(data);
+                    showDecResult(data);
+                    showAlert('success', '<strong>Éxito:</strong> Declaración descargada correctamente');
+                } else {
+                    showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`);
+                }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+        }
+    });
+
+    function downloadFile(result) {
+        const link = document.createElement('a');
+        link.href     = 'data:' + result.contentType + ';base64,' + result.fileBase64;
+        link.download = result.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function showDecResult(data) {
+        const container = document.getElementById('dec-result');
+        const content   = document.getElementById('dec-result-content');
+        let html = '';
+        if (data.requestId) {
+            html += `<div class="alert alert-info">
+                <strong>Request ID de sesión:</strong> ${data.requestId}
+                <br><small class="text-muted">Guarda este ID para reutilizar la sesión y agilizar futuras consultas.</small>
+            </div>`;
+            document.getElementById('dec-request-id').value = data.requestId;
+        }
+        html += `<div class="alert alert-success"><i class="bi bi-file-zip"></i> Archivo: <strong>${data.fileName}</strong></div>`;
+        content.innerHTML    = html;
+        container.style.display = 'block';
+    }
+
+    // ----------------------------------------------------------------
+    // Información Fiscal
+    // ----------------------------------------------------------------
+
+    document.getElementById('btn-consultar-if').addEventListener('click', async function () {
+        const requestId = document.getElementById('if-request-id').value.trim() || null;
+
+        if (metodo === 'fiel') {
+            if (!validateFiel()) return;
+
+            const fd = createFielFormData();
+            if (requestId) fd.append('RequestId', requestId);
+
+            document.getElementById('loading-text').textContent = 'Consultando Información Fiscal (FIEL)...';
+            loadingModal.show();
+
+            try {
+                const res  = await fetch('/ConsultaSat/ConsultarInfoFiscalFielAjax', { method: 'POST', body: fd });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success) { showIfResult(data); showAlert('success', '<strong>Éxito:</strong> Información Fiscal obtenida correctamente'); }
+                else              { showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`); }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+
+        } else {
+            if (!validateCiec()) return;
+
+            document.getElementById('loading-text').textContent = 'Consultando Información Fiscal (CIEC)...';
+            loadingModal.show();
+
+            try {
+                const res  = await fetch('/ConsultaSat/ConsultarInfoFiscalCiecAjax', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ rfc: sharedRfc.value, authorization: sharedToken.value, ciec: sharedCiec.value, requestId })
+                });
+                const data = await res.json();
+                loadingModal.hide();
+                if (data.success) { showIfResult(data); showAlert('success', '<strong>Éxito:</strong> Información Fiscal obtenida correctamente'); }
+                else              { showAlert('danger', `<strong>Error:</strong> ${data.error || 'Error desconocido'}`); }
+            } catch (e) { loadingModal.hide(); showAlert('danger', `<strong>Error:</strong> ${e.message}`); }
+            finally { setTimeout(refreshLogs, 500); }
+        }
+    });
+
+    function showIfResult(data) {
+        const container = document.getElementById('if-result');
+        const content   = document.getElementById('if-result-content');
+        const badge     = document.getElementById('if-request-id-badge');
+
+        content.textContent = JSON.stringify(data.data, null, 2);
+
+        if (data.requestId) {
+            badge.innerHTML = `<span class="badge bg-light text-dark">RequestId: ${escHtml(data.requestId)}</span>`;
+            document.getElementById('if-request-id').value = data.requestId;
+        } else {
+            badge.innerHTML = '';
+        }
+
+        container.style.display = 'block';
+    }
+
+    // ----------------------------------------------------------------
+    // Panel de Logs
+    // ----------------------------------------------------------------
+    const LOG_COLORS = { INFO: 'text-info', ERROR: 'text-danger', DEBUG: 'text-secondary', WARN: 'text-warning' };
+    let logAutoTimer = null;
+
+    async function refreshLogs() {
+        try {
+            const res     = await fetch('/ConsultaSat/GetLogs');
+            const entries = await res.json();
+            const container = document.getElementById('log-container');
+
+            if (!entries.length) {
+                container.innerHTML = '<div class="text-muted text-center py-3"><i class="bi bi-hourglass"></i> Sin trazas aún.</div>';
+                return;
             }
-            
-            // Validar datos FIEL
-            function validateFiel() {
-                if (!sharedRfc.value || !sharedToken.value || !sharedPassword.value) {
-                    showAlert('danger', '<strong>Error:</strong> Por favor complete todos los campos FIEL requeridos');
-                    return false;
-                }
-                if (!keyFile || !certFile) {
-                    showAlert('danger', '<strong>Error:</strong> Por favor seleccione los archivos de llave privada (.key) y certificado (.cer)');
-                    return false;
-                }
-                return true;
-            }
-            
-            // Crear FormData con datos FIEL
-            function createFormData() {
-                const formData = new FormData();
-                formData.append('Rfc', sharedRfc.value);
-                formData.append('Authorization', sharedToken.value);
-                formData.append('Contrasena', sharedPassword.value);
-                formData.append('LlavePrivada', keyFile);
-                formData.append('Certificado', certFile);
-                return formData;
-            }
-            
-            // Consultar Facturas
-            document.getElementById('btn-consultar-facturas').addEventListener('click', async function() {
-                if (!validateFiel()) return;
-                
-                const formData = createFormData();
-                formData.append('RequestId', document.getElementById('RequestId').value);
-                formData.append('FechaInicial', document.getElementById('FechaInicial').value);
-                formData.append('FechaFinal', document.getElementById('FechaFinal').value);
-                formData.append('RfcEmisor', document.getElementById('RfcEmisor').value);
-                formData.append('RfcReceptor', document.getElementById('RfcReceptor').value);
-                formData.append('TipoSolicitud', document.getElementById('TipoSolicitud').value);
-                formData.append('TipoComprobante', document.getElementById('TipoComprobante').value);
-                
-                document.getElementById('loading-text').textContent = 'Consultando facturas...';
-                loadingModal.show();
-                
-                try {
-                    const response = await fetch('/ConsultaSat/ConsultarFacturasAjax', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const result = await response.json();
-                    loadingModal.hide();
-                    
-                    if (result.success) {
-                        showAlert('success', `<strong>Éxito:</strong> ${result.message || 'Consulta realizada correctamente'}`);
-                        displayFacturasResults(result);
-                    } else {
-                        showAlert('danger', `<strong>Error:</strong> ${result.error || 'Error desconocido'}`);
-                    }
-                } catch (error) {
-                    loadingModal.hide();
-                    showAlert('danger', `<strong>Error:</strong> ${error.message}`);
-                }
-            });
-            
-            // Mostrar resultados de facturas
-            function displayFacturasResults(result) {
-                const container = document.getElementById('resultados-facturas');
-                const content = document.getElementById('facturas-content');
-                
-                let html = '';
-                
-                if (result.requestId) {
-                    html += `<div class="alert alert-info"><strong>Request ID:</strong> ${result.requestId}</div>`;
-                }
-                
-                if (result.data) {
-                    html += '<pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">';
-                    html += JSON.stringify(result.data, null, 2);
-                    html += '</pre>';
-                } else if (result.message) {
-                    html += `<p>${result.message}</p>`;
-                }
-                
-                content.innerHTML = html;
-                container.style.display = 'block';
-            }
-            
-            // Descargar Opinión de Cumplimiento
-            document.getElementById('btn-descargar-opinion').addEventListener('click', async function() {
-                if (!validateFiel()) return;
-                
-                const formData = createFormData();
-                
-                document.getElementById('loading-text').textContent = 'Descargando Opinión de Cumplimiento...';
-                loadingModal.show();
-                
-                try {
-                    const response = await fetch('/ConsultaSat/DescargarOpinionAjax', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const result = await response.json();
-                    loadingModal.hide();
-                    
-                    if (result.success && result.pdfBase64) {
-                        // Descargar PDF
-                        const link = document.createElement('a');
-                        link.href = 'data:' + result.contentType + ';base64,' + result.pdfBase64;
-                        link.download = result.fileName;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
-                        showAlert('success', '<strong>Éxito:</strong> Opinión de Cumplimiento descargada correctamente');
-                    } else {
-                        showAlert('danger', `<strong>Error:</strong> ${result.error || 'Error desconocido'}`);
-                    }
-                } catch (error) {
-                    loadingModal.hide();
-                    showAlert('danger', `<strong>Error:</strong> ${error.message}`);
-                }
-            });
-            
-            // Descargar Constancia de Situación Fiscal
-            document.getElementById('btn-descargar-csf').addEventListener('click', async function() {
-                if (!validateFiel()) return;
-                
-                const formData = createFormData();
-                
-                document.getElementById('loading-text').textContent = 'Descargando Constancia de Situación Fiscal...';
-                loadingModal.show();
-                
-                try {
-                    const response = await fetch('/ConsultaSat/DescargarCsfAjax', {
-                        method: 'POST',
-                        body: formData
-                    });
-                    
-                    const result = await response.json();
-                    loadingModal.hide();
-                    
-                    if (result.success && result.pdfBase64) {
-                        // Descargar PDF
-                        const link = document.createElement('a');
-                        link.href = 'data:' + result.contentType + ';base64,' + result.pdfBase64;
-                        link.download = result.fileName;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        
-                        showAlert('success', '<strong>Éxito:</strong> Constancia de Situación Fiscal descargada correctamente');
-                    } else {
-                        showAlert('danger', `<strong>Error:</strong> ${result.error || 'Error desconocido'}`);
-                    }
-                } catch (error) {
-                    loadingModal.hide();
-                    showAlert('danger', `<strong>Error:</strong> ${error.message}`);
-                }
-            });
-            
-            // Inicializar
-            loadSavedData();
-            
-        })();
-    </script>
+
+            const rows = entries.slice().reverse().map(e => {
+                const color   = LOG_COLORS[e.level] || 'text-white';
+                const details = e.details ? `<div class="text-muted ps-3" style="font-size:0.75rem;word-break:break-all;">${escHtml(e.details)}</div>` : '';
+                return `<div class="border-bottom border-secondary px-3 py-1">
+                    <span class="text-muted">${e.timestamp}</span>
+                    <span class="badge bg-secondary ms-1">${escHtml(e.service)}</span>
+                    <span class="${color} ms-1 fw-bold">[${e.level}]</span>
+                    <span class="ms-1">${escHtml(e.message)}</span>
+                    ${details}
+                </div>`;
+            }).join('');
+
+            container.innerHTML = rows;
+        } catch (_) { /* silencioso */ }
+    }
+
+    function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    document.getElementById('btn-refresh-logs').addEventListener('click', refreshLogs);
+
+    document.getElementById('btn-clear-logs').addEventListener('click', async function () {
+        await fetch('/ConsultaSat/ClearLogs', { method: 'POST' });
+        document.getElementById('log-container').innerHTML = '<div class="text-muted text-center py-3">Logs borrados.</div>';
+    });
+
+    document.getElementById('log-auto-refresh').addEventListener('change', function () {
+        if (this.checked) {
+            logAutoTimer = setInterval(refreshLogs, 3000);
+        } else {
+            clearInterval(logAutoTimer);
+            logAutoTimer = null;
+        }
+    });
+
+    // ----------------------------------------------------------------
+    // Init
+    // ----------------------------------------------------------------
+    loadSavedData();
+    refreshLogs();
+
+})();
+</script>
 }
