@@ -2,23 +2,27 @@
 import logging
 import urllib3
 from flask import Flask, render_template
-from routes import facturas, oc, csf
+from routes import facturas, oc, csf, auth, dec, info_fiscal
 
 # Deshabilitar advertencias de SSL en modo desarrollo
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)-8s] %(name)s: %(message)s',
+    datefmt='%H:%M:%S',
 )
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB máximo por archivo
 
 # Registrar blueprints
+app.register_blueprint(auth.bp)
 app.register_blueprint(facturas.bp)
 app.register_blueprint(oc.bp)
 app.register_blueprint(csf.bp)
+app.register_blueprint(dec.bp)
+app.register_blueprint(info_fiscal.bp)
 
 
 @app.get('/')

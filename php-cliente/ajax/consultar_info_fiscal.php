@@ -3,7 +3,7 @@
 
 header('Content-Type: application/json');
 
-require_once __DIR__ . '/../services/DecService.php';
+require_once __DIR__ . '/../services/InfoFiscalService.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -12,15 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    $metodo        = $_POST['dec_metodo']        ?? 'fiel';
-    $rfc           = $_POST['dec_rfc']           ?? '';
-    $authorization = $_POST['dec_authorization'] ?? '';
+    $metodo        = $_POST['if_metodo']        ?? 'fiel';
+    $rfc           = $_POST['if_rfc']           ?? '';
+    $authorization = $_POST['if_authorization'] ?? '';
 
     $params = [
-        'ejercicio'      => $_POST['dec_ejercicio']      ?? '',
-        'mes'            => $_POST['dec_mes']            ?? '',
-        'tipo_documento' => $_POST['dec_tipo_documento'] ?? '',
-        'request_id'     => $_POST['dec_request_id']     ?? ''
+        'request_id' => $_POST['if_request_id'] ?? ''
     ];
 
     if (empty($rfc)) {
@@ -29,38 +26,29 @@ try {
     if (empty($authorization)) {
         throw new Exception('El token de autorización es requerido');
     }
-    if (empty($params['ejercicio'])) {
-        throw new Exception('El ejercicio es requerido');
-    }
-    if (empty($params['mes'])) {
-        throw new Exception('El mes es requerido');
-    }
-    if (empty($params['tipo_documento'])) {
-        throw new Exception('El tipo de documento es requerido');
-    }
 
     if ($metodo === 'ciec') {
-        $ciec = $_POST['dec_ciec'] ?? '';
+        $ciec = $_POST['if_ciec'] ?? '';
         if (empty($ciec)) {
             throw new Exception('La CIEC es requerida');
         }
-        $resultado = DecService::descargarDecCiec($params, [
+        $resultado = InfoFiscalService::consultarInfoFiscalCiec($params, [
             'rfc'           => $rfc,
             'authorization' => $authorization,
             'ciec'          => $ciec
         ]);
 
     } else {
-        $contrasena = $_POST['dec_contrasena'] ?? '';
+        $contrasena = $_POST['if_contrasena'] ?? '';
         if (empty($contrasena)) {
             throw new Exception('La contraseña de la FIEL es requerida');
         }
-        $resultado = DecService::descargarDecFiel($params, [
+        $resultado = InfoFiscalService::consultarInfoFiscalFiel($params, [
             'rfc'           => $rfc,
             'authorization' => $authorization,
             'contrasena'    => $contrasena,
-            'llave_privada' => $_FILES['dec_llave_privada'] ?? null,
-            'certificado'   => $_FILES['dec_certificado']   ?? null
+            'llave_privada' => $_FILES['if_llave_privada'] ?? null,
+            'certificado'   => $_FILES['if_certificado']   ?? null
         ]);
     }
 

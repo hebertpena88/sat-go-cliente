@@ -34,22 +34,66 @@ def descargar_oc(rfc: str, authorization: str, contrasena: str, llave_privada, c
             'Authorization': f'Bearer {authorization}',
             'Accept':        '*/*',
         }
+        logger.info('>> OC FIEL REQUEST | URL=%s | headers=%s | files=%s',
+                    url,
+                    {k: (v[:20] + '...' if k == 'Authorization' else v) for k, v in headers.items()},
+                    {'llavePrivada': llave_privada.filename, 'Certificado': certificado.filename})
 
         response = requests.post(url, headers=headers, data=data, files=files, timeout=TIMEOUT, verify=False)
-        logger.info('Respuesta OC | status=%s | content-type=%s', response.status_code, response.headers.get('Content-Type'))
+        logger.info('<< OC FIEL RESPONSE | status=%s | content-type=%s | headers=%s',
+                    response.status_code, response.headers.get('Content-Type'), dict(response.headers))
 
         if response.ok:
             content_type = response.headers.get('Content-Type', 'application/pdf')
             file_name = _extract_filename(response, 'OpinionCumplimiento.pdf')
+            logger.debug('<< OC FIEL PDF | file=%s | size=%d bytes', file_name, len(response.content))
             return {'success': True, 'pdf_bytes': response.content, 'file_name': file_name, 'content_type': content_type}
 
         error_text = response.text
-        logger.error('Error OC | status=%s | body=%s', response.status_code, error_text[:500])
+        logger.error('<< OC FIEL ERROR | status=%s | body=%s', response.status_code, error_text[:500])
         return {'success': False, 'error': error_text or f'Error {response.status_code}'}
 
     except Exception as exc:
         logger.exception('Excepción inesperada al descargar OC')
         return {'success': False, 'error': str(exc)}
+
+
+def descargar_oc_ciec(rfc: str, authorization: str, ciec: str) -> dict:
+    """
+    Descarga la Opinión de Cumplimiento usando CIEC (GET).
+    """
+    url = BASE_URL + ENDPOINTS['CONSULTAR_OC']
+    logger.info('Iniciando descarga OC CIEC | RFC=%s | URL=%s', rfc, url)
+
+    try:
+        headers = {
+            'RFC':           rfc,
+            'Authorization': f'Bearer {authorization}',
+            'Secret':        ciec,
+            'Accept':        '*/*',
+        }
+        logger.info('>> OC CIEC REQUEST | URL=%s | headers=%s',
+                    url,
+                    {k: (v[:20] + '...' if k == 'Authorization' else ('***' if k == 'Secret' else v)) for k, v in headers.items()})
+
+        response = requests.get(url, headers=headers, timeout=TIMEOUT, verify=False)
+        logger.info('<< OC CIEC RESPONSE | status=%s | content-type=%s | headers=%s',
+                    response.status_code, response.headers.get('Content-Type'), dict(response.headers))
+
+        if response.ok:
+            content_type = response.headers.get('Content-Type', 'application/pdf')
+            file_name = _extract_filename(response, 'OpinionCumplimiento.pdf')
+            logger.debug('<< OC CIEC PDF | file=%s | size=%d bytes', file_name, len(response.content))
+            return {'success': True, 'pdf_bytes': response.content, 'file_name': file_name, 'content_type': content_type}
+
+        error_text = response.text
+        logger.error('<< OC CIEC ERROR | status=%s | body=%s', response.status_code, error_text[:500])
+        return {'success': False, 'error': error_text or f'Error {response.status_code}'}
+
+    except Exception as exc:
+        logger.exception('Excepción inesperada al descargar OC CIEC')
+        return {'success': False, 'error': str(exc)}
+
 
 
 def _extract_filename(response: requests.Response, default: str) -> str:

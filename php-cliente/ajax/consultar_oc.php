@@ -5,47 +5,52 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../services/OcService.php';
 
-// Verificar que sea una petición POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode([
-        'success' => false,
-        'error'   => 'Método no permitido',
-        'message' => 'Solo se permiten peticiones POST'
-    ]);
+    echo json_encode(['success' => false, 'error' => 'Método no permitido', 'message' => 'Solo se permiten peticiones POST']);
     exit;
 }
 
 try {
-    // Obtener datos FIEL
-    $request = [
-        'rfc'           => $_POST['oc_rfc']           ?? '',
-        'authorization' => $_POST['oc_authorization'] ?? '',
-        'contrasena'    => $_POST['oc_contrasena']    ?? '',
-        'llave_privada' => $_FILES['oc_llave_privada'] ?? null,
-        'certificado'   => $_FILES['oc_certificado']   ?? null
-    ];
+    $metodo        = $_POST['oc_metodo']        ?? 'fiel';
+    $rfc           = $_POST['oc_rfc']           ?? '';
+    $authorization = $_POST['oc_authorization'] ?? '';
 
-    // Validar campos requeridos
-    if (empty($request['rfc'])) {
+    if (empty($rfc)) {
         throw new Exception('El RFC es requerido');
     }
-    if (empty($request['authorization'])) {
+    if (empty($authorization)) {
         throw new Exception('El token de autorización es requerido');
     }
-    if (empty($request['contrasena'])) {
-        throw new Exception('La contraseña es requerida');
-    }
 
-    $resultado = OcService::descargarOcFiel($request);
+    if ($metodo === 'ciec') {
+        $ciec = $_POST['oc_ciec'] ?? '';
+        if (empty($ciec)) {
+            throw new Exception('La CIEC es requerida');
+        }
+        $resultado = OcService::descargarOcCiec([
+            'rfc'           => $rfc,
+            'authorization' => $authorization,
+            'ciec'          => $ciec
+        ]);
+
+    } else {
+        $contrasena = $_POST['oc_contrasena'] ?? '';
+        if (empty($contrasena)) {
+            throw new Exception('La contraseña de la FIEL es requerida');
+        }
+        $resultado = OcService::descargarOcFiel([
+            'rfc'           => $rfc,
+            'authorization' => $authorization,
+            'contrasena'    => $contrasena,
+            'llave_privada' => $_FILES['oc_llave_privada'] ?? null,
+            'certificado'   => $_FILES['oc_certificado']   ?? null
+        ]);
+    }
 
     echo json_encode($resultado);
 
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'error'   => $e->getMessage(),
-        'message' => 'Error de validación'
-    ]);
+    echo json_encode(['success' => false, 'error' => $e->getMessage(), 'message' => 'Error de validación']);
 }

@@ -2,35 +2,59 @@
 (function () {
     'use strict';
 
-    // Referencias a elementos FIEL
+    // Referencias a elementos compartidos
     const sharedRfc      = document.getElementById('shared-rfc');
     const sharedToken    = document.getElementById('shared-token');
     const sharedPassword = document.getElementById('shared-password');
     const sharedKey      = document.getElementById('shared-key');
     const sharedCert     = document.getElementById('shared-cert');
+    const sharedCiec     = document.getElementById('shared-ciec');
     const alertContainer = document.getElementById('alert-container');
     const loadingModal   = new bootstrap.Modal(document.getElementById('loading-modal'));
 
-    // Archivos en memoria
+    // Archivos FIEL en memoria
     let keyFile  = null;
     let certFile = null;
+
+    // Método activo: 'fiel' | 'ciec'
+    let metodo = 'fiel';
+
+    // ──────────────── Toggle FIEL / CIEC ────────────────
+    function applyMetodo(m) {
+        metodo = m;
+        document.getElementById('fiel-fields').style.display = m === 'fiel' ? '' : 'none';
+        document.getElementById('ciec-fields').style.display = m === 'ciec' ? '' : 'none';
+        document.getElementById(m === 'fiel' ? 'metodo-fiel' : 'metodo-ciec').checked = true;
+        localStorage.setItem('satgo_metodo', m);
+    }
+
+    document.getElementById('metodo-fiel').addEventListener('change', function () {
+        if (this.checked) applyMetodo('fiel');
+    });
+    document.getElementById('metodo-ciec').addEventListener('change', function () {
+        if (this.checked) applyMetodo('ciec');
+    });
 
     // ──────────────── Persistencia localStorage ────────────────
     function loadSaved() {
         sharedRfc.value      = localStorage.getItem('satgo_rfc')      || '';
         sharedToken.value    = localStorage.getItem('satgo_token')    || '';
         sharedPassword.value = localStorage.getItem('satgo_password') || '';
+        sharedCiec.value     = localStorage.getItem('satgo_ciec')     || '';
+        applyMetodo(localStorage.getItem('satgo_metodo') || 'fiel');
     }
     function save() {
         localStorage.setItem('satgo_rfc',      sharedRfc.value);
         localStorage.setItem('satgo_token',    sharedToken.value);
         localStorage.setItem('satgo_password', sharedPassword.value);
+        localStorage.setItem('satgo_ciec',     sharedCiec.value);
     }
     sharedRfc.addEventListener('input', save);
     sharedToken.addEventListener('input', save);
     sharedPassword.addEventListener('input', save);
+    sharedCiec.addEventListener('input', save);
 
-    // ──────────────── Archivos ────────────────
+    // ──────────────── Archivos FIEL ────────────────
     sharedKey.addEventListener('change', function () {
         if (this.files.length) {
             keyFile = this.files[0];
@@ -54,14 +78,25 @@
         alertContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    function validateFiel() {
-        if (!sharedRfc.value || !sharedToken.value || !sharedPassword.value) {
-            showAlert('danger', '<strong>Error:</strong> Por favor complete todos los campos FIEL requeridos.');
+    function validateCredentials() {
+        if (!sharedRfc.value || !sharedToken.value) {
+            showAlert('danger', '<strong>Error:</strong> RFC y Token de Autorización son requeridos.');
             return false;
         }
-        if (!keyFile || !certFile) {
-            showAlert('danger', '<strong>Error:</strong> Por favor seleccione la llave privada (.key) y el certificado (.cer).');
-            return false;
+        if (metodo === 'ciec') {
+            if (!sharedCiec.value) {
+                showAlert('danger', '<strong>Error:</strong> Ingrese la Clave CIEC.');
+                return false;
+            }
+        } else {
+            if (!sharedPassword.value) {
+                showAlert('danger', '<strong>Error:</strong> Ingrese la Contraseña FIEL.');
+                return false;
+            }
+            if (!keyFile || !certFile) {
+                showAlert('danger', '<strong>Error:</strong> Seleccione la llave privada (.key) y el certificado (.cer).');
+                return false;
+            }
         }
         return true;
     }
@@ -70,9 +105,14 @@
         const fd = new FormData();
         fd.append('rfc',           sharedRfc.value);
         fd.append('authorization', sharedToken.value);
-        fd.append('contrasena',    sharedPassword.value);
-        fd.append('llavePrivada',  keyFile, keyFile.name);
-        fd.append('certificado',   certFile, certFile.name);
+        fd.append('metodo',        metodo);
+        if (metodo === 'ciec') {
+            fd.append('ciec', sharedCiec.value);
+        } else {
+            fd.append('contrasena',   sharedPassword.value);
+            fd.append('llavePrivada', keyFile, keyFile.name);
+            fd.append('certificado',  certFile, certFile.name);
+        }
         for (const [k, v] of Object.entries(extra)) fd.append(k, v);
         return fd;
     }
@@ -110,7 +150,7 @@
 
     // ──────────────── Consultar Facturas ────────────────
     document.getElementById('btn-consultar').addEventListener('click', async function () {
-        if (!validateFiel()) return;
+        if (!validateCredentials()) return;
 
         const fechaIni = document.getElementById('fecha-inicial').value;
         const fechaFin = document.getElementById('fecha-final').value;
@@ -151,7 +191,7 @@
 
     // ──────────────── Descargar Opinión de Cumplimiento ────────────────
     document.getElementById('btn-descargar-oc').addEventListener('click', async function () {
-        if (!validateFiel()) return;
+        if (!validateCredentials()) return;
 
         const result = await postAjax('/api/oc/descargar', buildFormData(), 'Descargando Opinión de Cumplimiento...');
         if (!result) return;
@@ -166,7 +206,7 @@
 
     // ──────────────── Descargar CSF ────────────────
     document.getElementById('btn-descargar-csf').addEventListener('click', async function () {
-        if (!validateFiel()) return;
+        if (!validateCredentials()) return;
 
         const result = await postAjax('/api/csf/descargar', buildFormData(), 'Descargando Constancia de Situación Fiscal...');
         if (!result) return;
@@ -177,6 +217,127 @@
         } else {
             showAlert('danger', `<strong>Error:</strong> ${result.error || 'Error desconocido'}`);
         }
+    });
+
+    // ──────────────── Descargar Declaraciones ────────────────
+    document.getElementById('dec-ejercicio').value = new Date().getFullYear();
+
+    document.getElementById('btn-descargar-dec').addEventListener('click', async function () {
+        if (!validateCredentials()) return;
+
+        const ejercicio = document.getElementById('dec-ejercicio').value.trim();
+        if (!ejercicio) {
+            showAlert('danger', '<strong>Error:</strong> Ingrese el ejercicio fiscal (año).');
+            return;
+        }
+
+        const fd = buildFormData({
+            ejercicio:      ejercicio,
+            mes:            document.getElementById('dec-mes').value,
+            tipo_documento: document.getElementById('dec-tipo-documento').value,
+            request_id:     document.getElementById('dec-request-id').value,
+        });
+
+        const result = await postAjax('/api/dec/descargar', fd, 'Descargando Declaraciones...');
+        if (!result) return;
+
+        if (result.success && result.file_base64) {
+            triggerDownload(result.file_base64, result.content_type, result.file_name);
+            showAlert('success', '<strong>Éxito:</strong> Declaraciones descargadas correctamente.');
+        } else {
+            showAlert('danger', `<strong>Error:</strong> ${result.error || 'Error desconocido'}`);
+        }
+    });
+
+    // ──────────────── Consultar Información Fiscal ────────────────
+    document.getElementById('btn-consultar-info-fiscal').addEventListener('click', async function () {
+        if (!validateCredentials()) return;
+
+        const fd = buildFormData({
+            request_id: document.getElementById('info-fiscal-request-id').value,
+        });
+
+        const result = await postAjax('/api/info-fiscal/consultar', fd, 'Consultando Información Fiscal...');
+        if (!result) return;
+
+        if (result.success) {
+            showAlert('success', `<strong>Éxito:</strong> ${result.message || 'Consulta realizada correctamente'}`);
+            let html = '';
+            if (result.request_id) {
+                html += `<div class="alert alert-info mb-3"><strong>Request ID:</strong> ${result.request_id}</div>`;
+            }
+            html += `<pre class="result-pre">${JSON.stringify(result.data, null, 2)}</pre>`;
+            document.getElementById('info-fiscal-content').innerHTML = html;
+            document.getElementById('resultados-info-fiscal').style.display = 'block';
+        } else {
+            showAlert('danger', `<strong>Error:</strong> ${result.error || 'Error desconocido'}`);
+        }
+    });
+
+    // ──────────────── Autenticación ────────────────
+    document.getElementById('btn-crear-key').addEventListener('click', async function () {
+        const tokenPortal = document.getElementById('auth-token-portal').value.trim();
+        if (!tokenPortal) {
+            showAlert('danger', '<strong>Error:</strong> Ingrese el token del portal SAT-GO.');
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('token_portal', tokenPortal);
+
+        const result = await postAjax('/api/auth/crear-key', fd, 'Obteniendo API Key...');
+        if (!result) return;
+
+        if (result.success) {
+            document.getElementById('auth-key-value').value = result.key || '';
+            document.getElementById('auth-api-key').value   = result.key || '';
+            document.getElementById('auth-key-result').style.display = 'block';
+            showAlert('success', '<strong>Éxito:</strong> API Key obtenida. Continúe con el Paso 2.');
+        } else {
+            showAlert('danger', `<strong>Error:</strong> ${result.error || 'Error desconocido'}`);
+        }
+    });
+
+    document.getElementById('btn-copy-key').addEventListener('click', function () {
+        const val = document.getElementById('auth-key-value').value;
+        if (val) navigator.clipboard.writeText(val);
+    });
+
+    document.getElementById('btn-generar-token').addEventListener('click', async function () {
+        const apiKey = document.getElementById('auth-api-key').value.trim();
+        if (!apiKey) {
+            showAlert('danger', '<strong>Error:</strong> Ingrese la API Key del Paso 1.');
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('api_key', apiKey);
+
+        const result = await postAjax('/api/auth/generar-token', fd, 'Generando token...');
+        if (!result) return;
+
+        if (result.success) {
+            document.getElementById('auth-token-value').value          = result.access_token || '';
+            document.getElementById('auth-token-result').style.display = 'block';
+            document.getElementById('auth-token-applied').style.display = 'none';
+            showAlert('success', '<strong>Éxito:</strong> Token generado. Use el botón "Usar como Token" para aplicarlo.');
+        } else {
+            showAlert('danger', `<strong>Error:</strong> ${result.error || 'Error desconocido'}`);
+        }
+    });
+
+    document.getElementById('btn-copy-token').addEventListener('click', function () {
+        const val = document.getElementById('auth-token-value').value;
+        if (val) navigator.clipboard.writeText(val);
+    });
+
+    document.getElementById('btn-use-token').addEventListener('click', function () {
+        const token = document.getElementById('auth-token-value').value;
+        if (!token) return;
+        sharedToken.value = token;
+        save();
+        document.getElementById('auth-token-applied').style.display = 'inline';
+        showAlert('success', '<strong>Éxito:</strong> Token aplicado al campo "Token de Autorización".');
     });
 
     // Cargar datos guardados al iniciar

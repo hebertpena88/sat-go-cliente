@@ -6,16 +6,29 @@
  */
 class ApiConfig
 {
-    public const BASE_URL = 'https://api.sat-go.com//api/v2';
-    
+    public const BASE_URL    = 'https://api.sat-go.com/api/v2';
+    public const BASE_URL_V1 = 'https://api.sat-go.com';
+
     public const ENDPOINTS = [
         'CONSULTAR_FACFIEL' => '/Consultar/facfiel',
+        'CONSULTAR_FAC'     => '/Consultar/fac',
         'CONSULTAR_CSFFIEL' => '/Consultar/csffiel',
+        'CONSULTAR_CSF'     => '/Consultar/csf',
         'CONSULTAR_OCFIEL'  => '/Consultar/ocfiel',
-        'CONSULTAR_DECFIEL' => '/Consultar/decfiel'
+        'CONSULTAR_OC'      => '/Consultar/oc',
+        'CONSULTAR_DECFIEL' => '/Consultar/decfiel',
+        'CONSULTAR_DEC'     => '/Consultar/dec',
+        'CONSULTAR_IMSSOC'          => '/Consultar/imssoc',
+        'CONSULTAR_INFOFISCALFIEL'  => '/Consultar/informacionfiscalfiel',
+        'CONSULTAR_INFOFISCAL'      => '/Consultar/informacionfiscal'
+    ];
+
+    public const AUTH_ENDPOINTS = [
+        'CREATE_KEY'  => '/api/v1/Users/CreateKey',
+        'AUTH_TOKEN'  => '/api/Auth/token'
     ];
     
-    public const TIMEOUT = 30;
+    public const TIMEOUT = 120;
     
     public const DEFAULT_HEADERS = [
         'Accept' => '*/*',

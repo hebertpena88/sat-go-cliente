@@ -4,12 +4,12 @@
 require_once __DIR__ . '/../config/api.php';
 
 /**
- * Servicio para consulta de facturas del SAT usando FIEL o CIEC
+ * Servicio para consulta de Información Fiscal del SAT usando FIEL o CIEC
  */
-class FacturaService
+class InfoFiscalService
 {
     /** Ruta del archivo de log */
-    private static string $log_file = __DIR__ . '/../logs/factura_service.log';
+    private static string $log_file = __DIR__ . '/../logs/info_fiscal_service.log';
 
     /**
      * Escribe una entrada en el log
@@ -35,59 +35,30 @@ class FacturaService
     }
 
     /**
-     * Convierte fecha del formato ISO al formato requerido por la API
+     * Consulta Información Fiscal usando FIEL.
+     * POST /api/v2/Consultar/informacionfiscalfiel con multipart/form-data.
      *
-     * @param string $fecha_iso Fecha en formato ISO (2025-10-02T01:30:59)
-     * @return string Fecha formateada (2025-10-02 01:30:59)
-     */
-    private static function formatFechaParaAPI(string $fecha_iso): string
-    {
-        $fecha_con_espacio = str_replace('T', ' ', $fecha_iso);
-
-        if (strlen($fecha_con_espacio) === 16) {
-            return $fecha_con_espacio . ':00';
-        }
-
-        return $fecha_con_espacio;
-    }
-
-    /**
-     * Consulta facturas usando FIEL
-     *
-     * @param array $params  Parámetros de consulta
-     * @param array $request Datos de la FIEL
+     * @param array $params  ['request_id']
+     * @param array $request ['rfc', 'authorization', 'contrasena', 'llave_privada', 'certificado']
      * @return array Respuesta de la API
      */
-    public static function consultarFacturaFiel(array $params, array $request): array
+    public static function consultarInfoFiscalFiel(array $params, array $request): array
     {
         try {
-            self::log('INFO', 'Iniciando consulta Facturas (FIEL)', [
-                'rfc'                  => $request['rfc'] ?? '',
-                'tipo'                 => $params['tipo'] ?? '',
-                'tipo_busqueda'        => $params['tipo_busqueda'] ?? '',
-                'estatus_factura'      => $params['estatus_factura'] ?? '',
-                'fecha_inicial'        => $params['fecha_inicial'] ?? '',
-                'fecha_final'          => $params['fecha_final'] ?? '',
-                'descarga_comprobantes'=> $params['descarga_comprobantes'] ?? false,
-                'tiene_key'            => !empty($request['llave_privada']['tmp_name']),
-                'tiene_cer'            => !empty($request['certificado']['tmp_name']),
-                'authorization'        => substr($request['authorization'] ?? '', 0, 20) . '...'
+            self::log('INFO', 'Iniciando consulta Información Fiscal (FIEL)', [
+                'rfc'           => $request['rfc'] ?? '',
+                'request_id'    => $params['request_id'] ?? null,
+                'tiene_key'     => !empty($request['llave_privada']['tmp_name']),
+                'tiene_cer'     => !empty($request['certificado']['tmp_name']),
+                'authorization' => substr($request['authorization'] ?? '', 0, 20) . '...'
             ]);
 
-            $query_params = http_build_query([
-                'tipoBusqueda'        => $params['tipo_busqueda'],
-                'estatusFactura'      => $params['estatus_factura'],
-                'fecha_inicial'       => self::formatFechaParaAPI($params['fecha_inicial']),
-                'tipo'                => $params['tipo'],
-                'descargaComprobantes'=> $params['descarga_comprobantes'] ? 'TRUE' : 'FALSE',
-                'fecha_final'         => self::formatFechaParaAPI($params['fecha_final'])
-            ]);
-
-            if (!empty($request['request_id'])) {
-                $query_params .= '&requestId=' . urlencode($request['request_id']);
+            $query = '';
+            if (!empty($params['request_id'])) {
+                $query = '?' . http_build_query(['requestId' => $params['request_id']]);
             }
 
-            $url = ApiConfig::BASE_URL . ApiConfig::ENDPOINTS['CONSULTAR_FACFIEL'] . '?' . $query_params;
+            $url = ApiConfig::BASE_URL . ApiConfig::ENDPOINTS['CONSULTAR_INFOFISCALFIEL'] . $query;
             self::log('INFO', 'URL destino (FIEL)', $url);
 
             $ch = curl_init();
@@ -160,8 +131,8 @@ class FacturaService
             $data = json_decode($response, true);
 
             if ($http_code >= 200 && $http_code < 300) {
-                self::log('INFO', 'Consulta FIEL exitosa', ['facturas' => count($data['data'] ?? $data ?? [])]);
-                return ['success' => true, 'data' => $data, 'message' => 'Consulta realizada exitosamente'];
+                self::log('INFO', 'Consulta Información Fiscal (FIEL) exitosa');
+                return ['success' => true, 'data' => $data, 'message' => 'Información Fiscal obtenida exitosamente'];
             }
 
             self::log('ERROR', 'Error HTTP (FIEL)', [
@@ -171,7 +142,7 @@ class FacturaService
             return [
                 'success' => false,
                 'error'   => $data['message'] ?? 'Error HTTP ' . $http_code,
-                'message' => 'Error al consultar facturas',
+                'message' => 'Error al obtener la Información Fiscal',
                 'data'    => $data
             ];
 
@@ -181,45 +152,35 @@ class FacturaService
                 'file'    => $e->getFile(),
                 'line'    => $e->getLine()
             ]);
-            return ['success' => false, 'error' => $e->getMessage(), 'message' => 'Error inesperado al consultar facturas'];
+            return ['success' => false, 'error' => $e->getMessage(), 'message' => 'Error inesperado al obtener la Información Fiscal'];
         }
     }
 
     /**
-     * Consulta facturas usando CIEC.
-     * GET /api/v2/Consultar/fac con header Secret y query params anio/mes/dia.
+     * Consulta Información Fiscal usando CIEC.
+     * GET /api/v2/Consultar/informacionfiscal con header Secret.
      *
-     * @param array $params  ['tipo', 'tipo_busqueda', 'estatus_factura', 'anio', 'mes', 'dia', 'uuid', 'request_id']
+     * @param array $params  ['request_id']
      * @param array $request ['rfc', 'authorization', 'ciec']
-     * @return array
+     * @return array Respuesta de la API
      */
-    public static function consultarFacturaCiec(array $params, array $request): array
+    public static function consultarInfoFiscalCiec(array $params, array $request): array
     {
         try {
-            self::log('INFO', 'Iniciando consulta Facturas (CIEC)', [
-                'rfc'            => $request['rfc'] ?? '',
-                'tipo'           => $params['tipo'] ?? '',
-                'tipo_busqueda'  => $params['tipo_busqueda'] ?? '',
-                'estatus_factura'=> $params['estatus_factura'] ?? '',
-                'anio'           => $params['anio'] ?? '',
-                'mes'            => $params['mes'] ?? '',
-                'dia'            => $params['dia'] ?? '',
-                'uuid'           => $params['uuid'] ?? '',
-                'authorization'  => substr($request['authorization'] ?? '', 0, 20) . '...'
+            self::log('INFO', 'Iniciando consulta Información Fiscal (CIEC)', [
+                'rfc'           => $request['rfc'] ?? '',
+                'request_id'    => $params['request_id'] ?? null,
+                'authorization' => substr($request['authorization'] ?? '', 0, 20) . '...'
             ]);
 
             $query = array_filter([
-                'tipo'           => $params['tipo']            ?? 'recibidos',
-                'tipoBusqueda'   => $params['tipo_busqueda']   ?? 1,
-                'estatusFactura' => $params['estatus_factura'] ?? -1,
-                'anio'           => $params['anio']            ?? null,
-                'mes'            => $params['mes']             ?? null,
-                'dia'            => $params['dia']             ?? null,
-                'UUID'           => !empty($params['uuid'])       ? $params['uuid']       : null,
-                'requestId'      => !empty($params['request_id']) ? $params['request_id'] : null,
+                'requestId' => $params['request_id'] ?: null
             ], fn($v) => $v !== null && $v !== '');
 
-            $url = ApiConfig::BASE_URL . ApiConfig::ENDPOINTS['CONSULTAR_FAC'] . '?' . http_build_query($query);
+            $url = ApiConfig::BASE_URL . ApiConfig::ENDPOINTS['CONSULTAR_INFOFISCAL'];
+            if (!empty($query)) {
+                $url .= '?' . http_build_query($query);
+            }
             self::log('INFO', 'URL destino (CIEC)', $url);
 
             $ch = curl_init();
@@ -259,8 +220,8 @@ class FacturaService
             $data = json_decode($response, true);
 
             if ($http_code >= 200 && $http_code < 300) {
-                self::log('INFO', 'Consulta CIEC exitosa');
-                return ['success' => true, 'data' => $data, 'message' => 'Consulta realizada exitosamente'];
+                self::log('INFO', 'Consulta Información Fiscal (CIEC) exitosa');
+                return ['success' => true, 'data' => $data, 'message' => 'Información Fiscal obtenida exitosamente'];
             }
 
             self::log('ERROR', 'Error HTTP (CIEC)', [
@@ -270,7 +231,7 @@ class FacturaService
             return [
                 'success' => false,
                 'error'   => $data['message'] ?? 'Error HTTP ' . $http_code,
-                'message' => 'Error al consultar facturas',
+                'message' => 'Error al obtener la Información Fiscal',
                 'data'    => $data
             ];
 
@@ -280,7 +241,7 @@ class FacturaService
                 'file'    => $e->getFile(),
                 'line'    => $e->getLine()
             ]);
-            return ['success' => false, 'error' => $e->getMessage(), 'message' => 'Error inesperado al consultar facturas'];
+            return ['success' => false, 'error' => $e->getMessage(), 'message' => 'Error inesperado al obtener la Información Fiscal'];
         }
     }
 }

@@ -5,7 +5,6 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../services/CsfService.php';
 
-// Verificar que sea una petición POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode([
@@ -17,27 +16,43 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    // Obtener datos FIEL
-    $request = [
-        'rfc'           => $_POST['csf_rfc']           ?? '',
-        'authorization' => $_POST['csf_authorization'] ?? '',
-        'contrasena'    => $_POST['csf_contrasena']    ?? '',
-        'llave_privada' => $_FILES['csf_llave_privada'] ?? null,
-        'certificado'   => $_FILES['csf_certificado']   ?? null
-    ];
+    $metodo        = $_POST['csf_metodo']        ?? 'fiel';
+    $rfc           = $_POST['csf_rfc']           ?? '';
+    $authorization = $_POST['csf_authorization'] ?? '';
 
-    // Validar campos requeridos
-    if (empty($request['rfc'])) {
+    if (empty($rfc)) {
         throw new Exception('El RFC es requerido');
     }
-    if (empty($request['authorization'])) {
+    if (empty($authorization)) {
         throw new Exception('El token de autorización es requerido');
     }
-    if (empty($request['contrasena'])) {
-        throw new Exception('La contraseña es requerida');
-    }
 
-    $resultado = CsfService::descargarCsfFiel($request);
+    if ($metodo === 'ciec') {
+        $ciec = $_POST['csf_ciec'] ?? '';
+        if (empty($ciec)) {
+            throw new Exception('La CIEC es requerida');
+        }
+
+        $resultado = CsfService::descargarCsfCiec([
+            'rfc'           => $rfc,
+            'authorization' => $authorization,
+            'ciec'          => $ciec
+        ]);
+
+    } else {
+        $contrasena = $_POST['csf_contrasena'] ?? '';
+        if (empty($contrasena)) {
+            throw new Exception('La contraseña de la FIEL es requerida');
+        }
+
+        $resultado = CsfService::descargarCsfFiel([
+            'rfc'           => $rfc,
+            'authorization' => $authorization,
+            'contrasena'    => $contrasena,
+            'llave_privada' => $_FILES['csf_llave_privada'] ?? null,
+            'certificado'   => $_FILES['csf_certificado']   ?? null
+        ]);
+    }
 
     echo json_encode($resultado);
 

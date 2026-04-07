@@ -5,65 +5,92 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../services/FacturaService.php';
 
-// Verificar que sea una petición POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Método no permitido',
-        'message' => 'Solo se permiten peticiones POST'
-    ]);
+    echo json_encode(['success' => false, 'error' => 'Método no permitido', 'message' => 'Solo se permiten peticiones POST']);
     exit;
 }
 
 try {
-    // Obtener parámetros de consulta
-    $params = [
-        'tipo_busqueda' => (int)($_POST['tipo_busqueda'] ?? 1),
-        'estatus_factura' => (int)($_POST['estatus_factura'] ?? -1),
-        'fecha_inicial' => $_POST['fecha_inicial'] ?? '',
-        'tipo' => $_POST['tipo'] ?? 'recibidos',
-        'descarga_comprobantes' => isset($_POST['descarga_comprobantes']) && $_POST['descarga_comprobantes'] === 'true',
-        'fecha_final' => $_POST['fecha_final'] ?? ''
-    ];
+    $metodo        = $_POST['fac_metodo']   ?? 'fiel';
+    $rfc           = $_POST['rfc']          ?? '';
+    $authorization = $_POST['authorization'] ?? '';
 
-    // Obtener datos FIEL
-    $request = [
-        'rfc' => $_POST['rfc'] ?? '',
-        'authorization' => $_POST['authorization'] ?? '',
-        'contrasena' => $_POST['contrasena'] ?? '',
-        'request_id' => $_POST['request_id'] ?? '',
-        'llave_privada' => $_FILES['llave_privada'] ?? null,
-        'certificado' => $_FILES['certificado'] ?? null
-    ];
-
-    // Validar campos requeridos
-    if (empty($request['rfc'])) {
+    if (empty($rfc)) {
         throw new Exception('El RFC es requerido');
     }
-    if (empty($request['authorization'])) {
+    if (empty($authorization)) {
         throw new Exception('El token de autorización es requerido');
     }
-    if (empty($request['contrasena'])) {
-        throw new Exception('La contraseña es requerida');
-    }
-    if (empty($params['fecha_inicial'])) {
-        throw new Exception('La fecha inicial es requerida');
-    }
-    if (empty($params['fecha_final'])) {
-        throw new Exception('La fecha final es requerida');
+
+    // Parámetros comunes
+    $tipo_busqueda  = (int)($_POST['tipo_busqueda']  ?? 1);
+    $estatus_factura = (int)($_POST['estatus_factura'] ?? -1);
+    $tipo           = $_POST['tipo']        ?? 'recibidos';
+    $request_id     = $_POST['request_id']  ?? '';
+
+    if ($metodo === 'ciec') {
+        $ciec = $_POST['ciec'] ?? '';
+        if (empty($ciec)) {
+            throw new Exception('La CIEC es requerida');
+        }
+
+        $resultado = FacturaService::consultarFacturaCiec(
+            [
+                'tipo'           => $tipo,
+                'tipo_busqueda'  => $tipo_busqueda,
+                'estatus_factura'=> $estatus_factura,
+                'anio'           => $_POST['fac_anio']  ?? null,
+                'mes'            => $_POST['fac_mes']   ?? null,
+                'dia'            => $_POST['fac_dia']   ?? null,
+                'uuid'           => $_POST['fac_uuid']  ?? null,
+                'request_id'     => $request_id
+            ],
+            [
+                'rfc'           => $rfc,
+                'authorization' => $authorization,
+                'ciec'          => $ciec
+            ]
+        );
+
+    } else {
+        $contrasena = $_POST['contrasena'] ?? '';
+        if (empty($contrasena)) {
+            throw new Exception('La contraseña de la FIEL es requerida');
+        }
+
+        $fecha_inicial = $_POST['fecha_inicial'] ?? '';
+        $fecha_final   = $_POST['fecha_final']   ?? '';
+        if (empty($fecha_inicial)) {
+            throw new Exception('La fecha inicial es requerida');
+        }
+        if (empty($fecha_final)) {
+            throw new Exception('La fecha final es requerida');
+        }
+
+        $resultado = FacturaService::consultarFacturaFiel(
+            [
+                'tipo_busqueda'        => $tipo_busqueda,
+                'estatus_factura'      => $estatus_factura,
+                'fecha_inicial'        => $fecha_inicial,
+                'tipo'                 => $tipo,
+                'descarga_comprobantes'=> isset($_POST['descarga_comprobantes']) && $_POST['descarga_comprobantes'] === 'true',
+                'fecha_final'          => $fecha_final
+            ],
+            [
+                'rfc'           => $rfc,
+                'authorization' => $authorization,
+                'contrasena'    => $contrasena,
+                'request_id'    => $request_id,
+                'llave_privada' => $_FILES['llave_privada'] ?? null,
+                'certificado'   => $_FILES['certificado']   ?? null
+            ]
+        );
     }
 
-    // Realizar consulta
-    $resultado = FacturaService::consultarFacturaFiel($params, $request);
-    
     echo json_encode($resultado);
 
 } catch (Exception $e) {
     http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'error' => $e->getMessage(),
-        'message' => 'Error de validación'
-    ]);
+    echo json_encode(['success' => false, 'error' => $e->getMessage(), 'message' => 'Error de validación']);
 }
