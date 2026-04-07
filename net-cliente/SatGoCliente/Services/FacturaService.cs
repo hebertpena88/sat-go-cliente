@@ -5,141 +5,204 @@ using SatGoCliente.Models;
 
 namespace SatGoCliente.Services
 {
-    /// <summary>
-    /// Implementación del servicio de consulta de facturas
-    /// </summary>
     public class FacturaService : IFacturaService
     {
         private readonly HttpClient _http_client;
         private readonly ILogger<FacturaService> _logger;
+        private readonly ILogStore _log_store;
         private const string BASE_URL = "https://api.sat-go.com/api/v2";
 
-        public FacturaService(HttpClient http_client, ILogger<FacturaService> logger)
+        public FacturaService(HttpClient http_client, ILogger<FacturaService> logger, ILogStore log_store)
         {
             _http_client = http_client;
             _logger = logger;
+            _log_store = log_store;
         }
+
+        // -------------------------------------------------------------------------
+        // FIEL
+        // -------------------------------------------------------------------------
 
         public async Task<FacturaResponse> ConsultarFacturasAsync(ConsultaFacturaViewModel model)
         {
+            _log_store.Add("INFO", "FacturaService", "Iniciando consulta Facturas (FIEL)", new
+            {
+                rfc = model.Rfc,
+                tipo = model.Tipo,
+                tipo_busqueda = model.TipoBusqueda,
+                estatus_factura = model.EstatusFactura,
+                fecha_inicial = model.FechaInicial,
+                fecha_final = model.FechaFinal,
+                descarga_comprobantes = model.DescargaComprobantes,
+                tiene_key = model.LlavePrivada != null,
+                tiene_cer = model.Certificado != null,
+                request_id = model.RequestId,
+                token_preview = TruncateToken(model.Authorization)
+            });
+
             try
             {
-                // Crear el contenido multipart/form-data
                 using var form_content = new MultipartFormDataContent();
 
-                // Agregar llave privada si existe
                 if (model.LlavePrivada != null)
                 {
                     var llave_stream = new StreamContent(model.LlavePrivada.OpenReadStream());
                     llave_stream.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                     form_content.Add(llave_stream, "llavePrivada", model.LlavePrivada.FileName);
+                    _log_store.Add("DEBUG", "FacturaService", "Adjuntando llave privada",
+                        new { name = model.LlavePrivada.FileName, size = model.LlavePrivada.Length });
                 }
 
-                // Agregar certificado si existe
                 if (model.Certificado != null)
                 {
                     var cert_stream = new StreamContent(model.Certificado.OpenReadStream());
                     cert_stream.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                     form_content.Add(cert_stream, "Certificado", model.Certificado.FileName);
+                    _log_store.Add("DEBUG", "FacturaService", "Adjuntando certificado",
+                        new { name = model.Certificado.FileName, size = model.Certificado.Length });
                 }
 
-                // Agregar contraseña
                 form_content.Add(new StringContent(model.Contrasena), "Contrasena");
 
-                // Construir query parameters
                 var fecha_inicial = FormatFechaParaApi(model.FechaInicial);
-                var fecha_final = FormatFechaParaApi(model.FechaFinal);
+                var fecha_final   = FormatFechaParaApi(model.FechaFinal);
 
                 var query_params = new Dictionary<string, string>
                 {
-                    { "tipoBusqueda", model.TipoBusqueda.ToString() },
-                    { "estatusFactura", model.EstatusFactura.ToString() },
-                    { "fecha_inicial", fecha_inicial },
-                    { "tipo", model.Tipo },
-                    { "descargaComprobantes", model.DescargaComprobantes.ToString().ToUpper() },
-                    { "fecha_final", fecha_final }
+                    { "tipoBusqueda",         model.TipoBusqueda.ToString() },
+                    { "estatusFactura",        model.EstatusFactura.ToString() },
+                    { "fecha_inicial",         fecha_inicial },
+                    { "tipo",                  model.Tipo },
+                    { "descargaComprobantes",  model.DescargaComprobantes.ToString().ToUpper() },
+                    { "fecha_final",           fecha_final }
                 };
 
-                // Agregar requestId si existe
                 if (!string.IsNullOrWhiteSpace(model.RequestId))
-                {
-                    query_params.Add("requestId", model.RequestId);
-                }
+                    query_params["requestId"] = model.RequestId;
 
                 var query_string = string.Join("&", query_params.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
                 var url = $"{BASE_URL}/Consultar/facfiel?{query_string}";
 
-                // Crear la solicitud HTTP
+                _log_store.Add("INFO", "FacturaService", "→ POST (FIEL)", new { url, method = "POST multipart" });
+
                 using var request = new HttpRequestMessage(HttpMethod.Post, url);
                 request.Headers.Add("RFC", model.Rfc);
                 request.Headers.Add("Authorization", $"Bearer {model.Authorization}");
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                 request.Content = form_content;
 
-                // Enviar la solicitud
                 var response = await _http_client.SendAsync(request);
                 var response_content = await response.Content.ReadAsStringAsync();
+
+                _log_store.Add(response.IsSuccessStatusCode ? "INFO" : "ERROR", "FacturaService",
+                    $"← Respuesta (FIEL) HTTP {(int)response.StatusCode}",
+                    new { status = (int)response.StatusCode, body_size = response_content.Length, body_preview = Truncate(response_content, 300) });
 
                 if (response.IsSuccessStatusCode)
                 {
                     var data = JsonSerializer.Deserialize<JsonElement>(response_content);
-                    
-                    // Intentar obtener el requestId de la respuesta
                     string? request_id = null;
-                    if (data.TryGetProperty("requestId", out var request_id_element))
-                    {
-                        request_id = request_id_element.GetString();
-                    }
+                    if (data.TryGetProperty("requestId", out var rid)) request_id = rid.GetString();
 
-                    return new FacturaResponse
-                    {
-                        Success = true,
-                        Data = data,
-                        Message = "Consulta realizada exitosamente",
-                        RequestId = request_id
-                    };
+                    return new FacturaResponse { Success = true, Data = data, Message = "Consulta realizada exitosamente", RequestId = request_id };
                 }
-                else
-                {
-                    _logger.LogError("Error en consulta de facturas: {StatusCode} - {Content}", 
-                        response.StatusCode, response_content);
 
-                    return new FacturaResponse
-                    {
-                        Success = false,
-                        Error = response_content,
-                        Message = $"Error {(int)response.StatusCode}: {response.ReasonPhrase}"
-                    };
-                }
+                _logger.LogError("Error consulta facturas FIEL: {Status} - {Content}", response.StatusCode, response_content);
+                return new FacturaResponse { Success = false, Error = response_content, Message = $"Error {(int)response.StatusCode}: {response.ReasonPhrase}" };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al consultar facturas");
-
-                return new FacturaResponse
-                {
-                    Success = false,
-                    Error = ex.Message,
-                    Message = "Error al realizar la consulta"
-                };
+                _logger.LogError(ex, "Error al consultar facturas FIEL");
+                _log_store.Add("ERROR", "FacturaService", "Excepción (FIEL)", new { error = ex.Message });
+                return new FacturaResponse { Success = false, Error = ex.Message, Message = "Error al realizar la consulta" };
             }
         }
 
-        /// <summary>
-        /// Convierte fecha ISO a formato requerido por la API
-        /// </summary>
+        // -------------------------------------------------------------------------
+        // CIEC — GET /api/v2/Consultar/fac con header Secret
+        // -------------------------------------------------------------------------
+
+        public async Task<FacturaResponse> ConsultarFacturasCiecAsync(ConsultaCiecViewModel model)
+        {
+            _log_store.Add("INFO", "FacturaService", "Iniciando consulta Facturas (CIEC)", new
+            {
+                rfc = model.Rfc,
+                tipo = model.Tipo,
+                tipo_busqueda = model.TipoBusqueda,
+                estatus_factura = model.EstatusFactura,
+                anio = model.Anio,
+                mes = model.Mes,
+                dia = model.Dia,
+                uuid = model.Uuid,
+                request_id = model.RequestId,
+                token_preview = TruncateToken(model.Authorization)
+            });
+
+            try
+            {
+                var query = new Dictionary<string, string>
+                {
+                    { "tipo",           model.Tipo },
+                    { "tipoBusqueda",   model.TipoBusqueda.ToString() },
+                    { "estatusFactura", model.EstatusFactura.ToString() }
+                };
+
+                if (!string.IsNullOrWhiteSpace(model.Anio))      query["anio"]      = model.Anio;
+                if (!string.IsNullOrWhiteSpace(model.Mes))       query["mes"]       = model.Mes;
+                if (!string.IsNullOrWhiteSpace(model.Dia))       query["dia"]       = model.Dia;
+                if (!string.IsNullOrWhiteSpace(model.Uuid))      query["UUID"]      = model.Uuid;
+                if (!string.IsNullOrWhiteSpace(model.RequestId)) query["requestId"] = model.RequestId;
+
+                var query_string = string.Join("&", query.Select(p => $"{p.Key}={Uri.EscapeDataString(p.Value)}"));
+                var url = $"{BASE_URL}/Consultar/fac?{query_string}";
+
+                _log_store.Add("INFO", "FacturaService", "→ GET (CIEC)", new { url, method = "GET", secret_preview = TruncateToken(model.Ciec) });
+
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("RFC", model.Rfc);
+                request.Headers.Add("Authorization", $"Bearer {model.Authorization}");
+                request.Headers.Add("Secret", model.Ciec);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+
+                var response = await _http_client.SendAsync(request);
+                var response_content = await response.Content.ReadAsStringAsync();
+
+                _log_store.Add(response.IsSuccessStatusCode ? "INFO" : "ERROR", "FacturaService",
+                    $"← Respuesta (CIEC) HTTP {(int)response.StatusCode}",
+                    new { status = (int)response.StatusCode, body_size = response_content.Length, body_preview = Truncate(response_content, 300) });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var data = JsonSerializer.Deserialize<JsonElement>(response_content);
+                    string? request_id = null;
+                    if (data.TryGetProperty("requestId", out var rid)) request_id = rid.GetString();
+
+                    return new FacturaResponse { Success = true, Data = data, Message = "Consulta realizada exitosamente", RequestId = request_id };
+                }
+
+                _logger.LogError("Error consulta facturas CIEC: {Status} - {Content}", response.StatusCode, response_content);
+                return new FacturaResponse { Success = false, Error = response_content, Message = $"Error {(int)response.StatusCode}: {response.ReasonPhrase}" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al consultar facturas CIEC");
+                _log_store.Add("ERROR", "FacturaService", "Excepción (CIEC)", new { error = ex.Message });
+                return new FacturaResponse { Success = false, Error = ex.Message, Message = "Error al realizar la consulta" };
+            }
+        }
+
+        // -------------------------------------------------------------------------
+
         private static string FormatFechaParaApi(string fecha_iso)
         {
-            // Convertir de 2025-10-02T01:30:59 a 2025-10-02 01:30:59
-            var fecha_con_espacio = fecha_iso.Replace('T', ' ');
-            
-            // Si no tiene segundos, agregarlos
-            if (fecha_con_espacio.Length == 16) // yyyy-mm-dd hh:mm
-            {
-                return fecha_con_espacio + ":00";
-            }
-            
-            return fecha_con_espacio;
+            var result = fecha_iso.Replace('T', ' ');
+            return result.Length == 16 ? result + ":00" : result;
         }
+
+        private static string TruncateToken(string? token) =>
+            string.IsNullOrEmpty(token) ? "(vacío)" : token[..Math.Min(20, token.Length)] + "...";
+
+        private static string Truncate(string s, int max) =>
+            s.Length <= max ? s : s[..max] + $"... (+{s.Length - max} chars)";
     }
 }

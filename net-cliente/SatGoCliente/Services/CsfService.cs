@@ -4,105 +4,150 @@ using SatGoCliente.Models;
 
 namespace SatGoCliente.Services
 {
-    /// <summary>
-    /// Implementación del servicio de Constancia de Situación Fiscal
-    /// </summary>
     public class CsfService : ICsfService
     {
         private readonly HttpClient _http_client;
         private readonly ILogger<CsfService> _logger;
+        private readonly ILogStore _log_store;
         private const string BASE_URL = "https://api.sat-go.com/api/v2";
 
-        public CsfService(HttpClient http_client, ILogger<CsfService> logger)
+        public CsfService(HttpClient http_client, ILogger<CsfService> logger, ILogStore log_store)
         {
             _http_client = http_client;
             _logger = logger;
+            _log_store = log_store;
         }
+
+        // -------------------------------------------------------------------------
+        // FIEL
+        // -------------------------------------------------------------------------
 
         public async Task<CsfResponse> DescargarCsfAsync(OpinionCumplimientoViewModel model)
         {
+            _log_store.Add("INFO", "CsfService", "Iniciando descarga CSF (FIEL)", new
+            {
+                rfc = model.Rfc,
+                tiene_key = model.LlavePrivada != null,
+                tiene_cer = model.Certificado != null,
+                token_preview = TruncateToken(model.Authorization)
+            });
+
             try
             {
-                // Crear el contenido multipart/form-data
                 using var form_content = new MultipartFormDataContent();
 
-                // Agregar llave privada si existe
                 if (model.LlavePrivada != null)
                 {
                     var llave_stream = new StreamContent(model.LlavePrivada.OpenReadStream());
                     llave_stream.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                     form_content.Add(llave_stream, "llavePrivada", model.LlavePrivada.FileName);
+                    _log_store.Add("DEBUG", "CsfService", "Adjuntando llave privada",
+                        new { name = model.LlavePrivada.FileName, size = model.LlavePrivada.Length });
                 }
 
-                // Agregar certificado si existe
                 if (model.Certificado != null)
                 {
                     var cert_stream = new StreamContent(model.Certificado.OpenReadStream());
                     cert_stream.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                     form_content.Add(cert_stream, "Certificado", model.Certificado.FileName);
+                    _log_store.Add("DEBUG", "CsfService", "Adjuntando certificado",
+                        new { name = model.Certificado.FileName, size = model.Certificado.Length });
                 }
 
-                // Agregar contraseña
                 form_content.Add(new StringContent(model.Contrasena), "Contrasena");
 
                 var url = $"{BASE_URL}/Consultar/csffiel";
+                _log_store.Add("INFO", "CsfService", "→ POST (FIEL)", new { url });
 
-                // Crear la solicitud HTTP
                 using var request = new HttpRequestMessage(HttpMethod.Post, url);
                 request.Headers.Add("RFC", model.Rfc);
                 request.Headers.Add("Authorization", $"Bearer {model.Authorization}");
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
                 request.Content = form_content;
 
-                // Enviar la solicitud
                 var response = await _http_client.SendAsync(request);
+
+                _log_store.Add(response.IsSuccessStatusCode ? "INFO" : "ERROR", "CsfService",
+                    $"← Respuesta (FIEL) HTTP {(int)response.StatusCode}",
+                    new { status = (int)response.StatusCode, content_type = response.Content.Headers.ContentType?.MediaType });
 
                 if (response.IsSuccessStatusCode)
                 {
                     var content_type = response.Content.Headers.ContentType?.MediaType ?? "application/pdf";
                     var pdf_bytes = await response.Content.ReadAsByteArrayAsync();
-                    
-                    // Obtener nombre del archivo del header Content-Disposition
-                    var file_name = "ConstanciaSituacionFiscal.pdf";
-                    if (response.Content.Headers.ContentDisposition?.FileName != null)
-                    {
-                        file_name = response.Content.Headers.ContentDisposition.FileName.Trim('"');
-                    }
+                    var file_name = response.Content.Headers.ContentDisposition?.FileName?.Trim('"') ?? "ConstanciaSituacionFiscal.pdf";
 
-                    return new CsfResponse
-                    {
-                        Success = true,
-                        PdfData = pdf_bytes,
-                        FileName = file_name,
-                        ContentType = content_type,
-                        Message = "Constancia de Situación Fiscal descargada exitosamente"
-                    };
-                }
-                else
-                {
-                    var error_content = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error en descarga de CSF: {StatusCode} - {Content}", 
-                        response.StatusCode, error_content);
+                    _log_store.Add("INFO", "CsfService", "PDF (FIEL) recibido", new { file_name, bytes = pdf_bytes.Length });
 
-                    return new CsfResponse
-                    {
-                        Success = false,
-                        Error = error_content,
-                        Message = $"Error {(int)response.StatusCode}: {response.ReasonPhrase}"
-                    };
+                    return new CsfResponse { Success = true, PdfData = pdf_bytes, FileName = file_name, ContentType = content_type, Message = "CSF descargada exitosamente" };
                 }
+
+                var error_content = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Error descarga CSF FIEL: {Status} - {Content}", response.StatusCode, error_content);
+                return new CsfResponse { Success = false, Error = error_content, Message = $"Error {(int)response.StatusCode}: {response.ReasonPhrase}" };
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al descargar CSF");
-
-                return new CsfResponse
-                {
-                    Success = false,
-                    Error = ex.Message,
-                    Message = "Error al realizar la descarga"
-                };
+                _logger.LogError(ex, "Error al descargar CSF FIEL");
+                _log_store.Add("ERROR", "CsfService", "Excepción (FIEL)", new { error = ex.Message });
+                return new CsfResponse { Success = false, Error = ex.Message, Message = "Error al realizar la descarga" };
             }
         }
+
+        // -------------------------------------------------------------------------
+        // CIEC — GET /api/v2/Consultar/csf con header Secret
+        // -------------------------------------------------------------------------
+
+        public async Task<CsfResponse> DescargarCsfCiecAsync(ConsultaCiecViewModel model)
+        {
+            _log_store.Add("INFO", "CsfService", "Iniciando descarga CSF (CIEC)", new
+            {
+                rfc = model.Rfc,
+                token_preview = TruncateToken(model.Authorization),
+                secret_preview = TruncateToken(model.Ciec)
+            });
+
+            try
+            {
+                var url = $"{BASE_URL}/Consultar/csf";
+                _log_store.Add("INFO", "CsfService", "→ GET (CIEC)", new { url });
+
+                using var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("RFC", model.Rfc);
+                request.Headers.Add("Authorization", $"Bearer {model.Authorization}");
+                request.Headers.Add("Secret", model.Ciec);
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
+
+                var response = await _http_client.SendAsync(request);
+
+                _log_store.Add(response.IsSuccessStatusCode ? "INFO" : "ERROR", "CsfService",
+                    $"← Respuesta (CIEC) HTTP {(int)response.StatusCode}",
+                    new { status = (int)response.StatusCode, content_type = response.Content.Headers.ContentType?.MediaType });
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var content_type = response.Content.Headers.ContentType?.MediaType ?? "application/pdf";
+                    var pdf_bytes = await response.Content.ReadAsByteArrayAsync();
+                    var file_name = response.Content.Headers.ContentDisposition?.FileName?.Trim('"') ?? "ConstanciaSituacionFiscal.pdf";
+
+                    _log_store.Add("INFO", "CsfService", "PDF (CIEC) recibido", new { file_name, bytes = pdf_bytes.Length });
+
+                    return new CsfResponse { Success = true, PdfData = pdf_bytes, FileName = file_name, ContentType = content_type, Message = "CSF descargada exitosamente" };
+                }
+
+                var error_content = await response.Content.ReadAsStringAsync();
+                _logger.LogError("Error descarga CSF CIEC: {Status} - {Content}", response.StatusCode, error_content);
+                return new CsfResponse { Success = false, Error = error_content, Message = $"Error {(int)response.StatusCode}: {response.ReasonPhrase}" };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al descargar CSF CIEC");
+                _log_store.Add("ERROR", "CsfService", "Excepción (CIEC)", new { error = ex.Message });
+                return new CsfResponse { Success = false, Error = ex.Message, Message = "Error al realizar la descarga" };
+            }
+        }
+
+        private static string TruncateToken(string? token) =>
+            string.IsNullOrEmpty(token) ? "(vacío)" : token[..Math.Min(20, token.Length)] + "...";
     }
 }

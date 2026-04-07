@@ -3,13 +3,13 @@ using SatGoCliente.Models;
 
 namespace SatGoCliente.Services
 {
-    public interface IFacturaService
+    public interface IInfoFiscalService
     {
-        Task<FacturaResponse> ConsultarFacturasAsync(ConsultaFacturaViewModel model);
-        Task<FacturaResponse> ConsultarFacturasCiecAsync(ConsultaCiecViewModel model);
+        Task<InfoFiscalResponse> ConsultarFielAsync(InfoFiscalFielViewModel model);
+        Task<InfoFiscalResponse> ConsultarCiecAsync(InfoFiscalCiecViewModel model);
     }
 
-    public class FacturaResponse
+    public class InfoFiscalResponse
     {
         public bool Success { get; set; }
         public object? Data { get; set; }

@@ -5,31 +5,34 @@ using SatGoCliente.Services;
 
 namespace SatGoCliente.Controllers
 {
-    /// <summary>
-    /// Controlador unificado para consultas SAT
-    /// </summary>
     public class ConsultaSatController : Controller
     {
         private readonly IFacturaService _factura_service;
         private readonly IOpinionCumplimientoService _opinion_service;
         private readonly ICsfService _csf_service;
+        private readonly IDeclaracionService _dec_service;
+        private readonly IInfoFiscalService _info_fiscal_service;
+        private readonly ILogStore _log_store;
         private readonly ILogger<ConsultaSatController> _logger;
 
         public ConsultaSatController(
             IFacturaService factura_service,
             IOpinionCumplimientoService opinion_service,
             ICsfService csf_service,
+            IDeclaracionService dec_service,
+            IInfoFiscalService info_fiscal_service,
+            ILogStore log_store,
             ILogger<ConsultaSatController> logger)
         {
             _factura_service = factura_service;
             _opinion_service = opinion_service;
             _csf_service = csf_service;
+            _dec_service = dec_service;
+            _info_fiscal_service = info_fiscal_service;
+            _log_store = log_store;
             _logger = logger;
         }
 
-        /// <summary>
-        /// Muestra la vista principal con pestañas
-        /// </summary>
         [HttpGet]
         public IActionResult Index(string tab = "facturas")
         {
@@ -42,26 +45,47 @@ namespace SatGoCliente.Controllers
             return View(model);
         }
 
-        /// <summary>
-        /// Consulta facturas via AJAX
-        /// </summary>
+        // -------------------------------------------------------------------------
+        // Logs
+        // -------------------------------------------------------------------------
+
+        [HttpGet]
+        public IActionResult GetLogs()
+        {
+            var entries = _log_store.GetAll()
+                .Select(e => new
+                {
+                    timestamp = e.Timestamp.ToString("HH:mm:ss.fff"),
+                    level = e.Level,
+                    service = e.Service,
+                    message = e.Message,
+                    details = e.Details
+                })
+                .ToList();
+
+            return Json(entries);
+        }
+
+        [HttpPost]
+        public IActionResult ClearLogs()
+        {
+            _log_store.Clear();
+            return Json(new { success = true });
+        }
+
+        // -------------------------------------------------------------------------
+        // FIEL — Facturas
+        // -------------------------------------------------------------------------
+
         [HttpPost]
         public async Task<IActionResult> ConsultarFacturasAjax(ConsultaSatViewModel model)
         {
-            // Validar campos FIEL
-            if (string.IsNullOrEmpty(model.Rfc) || 
-                string.IsNullOrEmpty(model.Authorization) || 
-                string.IsNullOrEmpty(model.Contrasena))
-            {
+            if (string.IsNullOrEmpty(model.Rfc) || string.IsNullOrEmpty(model.Authorization) || string.IsNullOrEmpty(model.Contrasena))
                 return Json(new { success = false, error = "Por favor complete todos los campos FIEL requeridos" });
-            }
 
             if (model.LlavePrivada == null || model.Certificado == null)
-            {
                 return Json(new { success = false, error = "Los archivos de llave privada y certificado son requeridos" });
-            }
 
-            // Crear modelo de factura
             var factura_model = new ConsultaFacturaViewModel
             {
                 Rfc = model.Rfc,
@@ -78,35 +102,52 @@ namespace SatGoCliente.Controllers
 
             var resultado = await _factura_service.ConsultarFacturasAsync(factura_model);
 
-            return Json(new { 
-                success = resultado.Success, 
-                message = resultado.Message,
-                error = resultado.Error,
-                requestId = resultado.RequestId,
-                data = resultado.Data
-            });
+            return Json(new { success = resultado.Success, message = resultado.Message, error = resultado.Error, requestId = resultado.RequestId, data = resultado.Data });
         }
 
-        /// <summary>
-        /// Descarga Opinión de Cumplimiento via AJAX
-        /// </summary>
+        // -------------------------------------------------------------------------
+        // CIEC — Facturas
+        // -------------------------------------------------------------------------
+
+        [HttpPost]
+        public async Task<IActionResult> ConsultarFacturasCiecAjax([FromBody] ConsultaCiecRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Rfc) || string.IsNullOrWhiteSpace(request.Authorization) || string.IsNullOrWhiteSpace(request.Ciec))
+                return Json(new { success = false, error = "RFC, token y clave CIEC son requeridos" });
+
+            var model = new ConsultaCiecViewModel
+            {
+                Rfc = request.Rfc.Trim(),
+                Authorization = request.Authorization.Trim(),
+                Ciec = request.Ciec.Trim(),
+                Tipo = request.Tipo ?? "recibidos",
+                TipoBusqueda = request.TipoBusqueda,
+                EstatusFactura = request.EstatusFactura,
+                Anio = request.Anio,
+                Mes = request.Mes,
+                Dia = request.Dia,
+                Uuid = request.Uuid,
+                RequestId = request.RequestId
+            };
+
+            var resultado = await _factura_service.ConsultarFacturasCiecAsync(model);
+
+            return Json(new { success = resultado.Success, message = resultado.Message, error = resultado.Error, requestId = resultado.RequestId, data = resultado.Data });
+        }
+
+        // -------------------------------------------------------------------------
+        // FIEL — Opinión de Cumplimiento
+        // -------------------------------------------------------------------------
+
         [HttpPost]
         public async Task<IActionResult> DescargarOpinionAjax(ConsultaSatViewModel model)
         {
-            // Validar campos FIEL
-            if (string.IsNullOrEmpty(model.Rfc) || 
-                string.IsNullOrEmpty(model.Authorization) || 
-                string.IsNullOrEmpty(model.Contrasena))
-            {
+            if (string.IsNullOrEmpty(model.Rfc) || string.IsNullOrEmpty(model.Authorization) || string.IsNullOrEmpty(model.Contrasena))
                 return Json(new { success = false, error = "Por favor complete todos los campos FIEL requeridos" });
-            }
 
             if (model.LlavePrivada == null || model.Certificado == null)
-            {
                 return Json(new { success = false, error = "Los archivos de llave privada y certificado son requeridos" });
-            }
 
-            // Crear modelo de opinión
             var opinion_model = new OpinionCumplimientoViewModel
             {
                 Rfc = model.Rfc,
@@ -119,45 +160,49 @@ namespace SatGoCliente.Controllers
             var resultado = await _opinion_service.DescargarOpinionAsync(opinion_model);
 
             if (resultado.Success && resultado.PdfData != null)
-            {
-                // Devolver PDF como base64 para descarga en cliente
-                var base64 = Convert.ToBase64String(resultado.PdfData);
-                return Json(new { 
-                    success = true, 
-                    pdfBase64 = base64,
-                    fileName = resultado.FileName ?? "OpinionDeCumplimiento.pdf",
-                    contentType = resultado.ContentType ?? "application/pdf"
-                });
-            }
-            else
-            {
-                return Json(new { 
-                    success = false, 
-                    error = resultado.Error ?? resultado.Message ?? "Error desconocido" 
-                });
-            }
+                return Json(new { success = true, pdfBase64 = Convert.ToBase64String(resultado.PdfData), fileName = resultado.FileName ?? "OpinionDeCumplimiento.pdf", contentType = resultado.ContentType ?? "application/pdf" });
+
+            return Json(new { success = false, error = resultado.Error ?? resultado.Message ?? "Error desconocido" });
         }
 
-        /// <summary>
-        /// Descarga CSF via AJAX
-        /// </summary>
+        // -------------------------------------------------------------------------
+        // CIEC — Opinión de Cumplimiento
+        // -------------------------------------------------------------------------
+
+        [HttpPost]
+        public async Task<IActionResult> DescargarOpinionCiecAjax([FromBody] ConsultaCiecRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Rfc) || string.IsNullOrWhiteSpace(request.Authorization) || string.IsNullOrWhiteSpace(request.Ciec))
+                return Json(new { success = false, error = "RFC, token y clave CIEC son requeridos" });
+
+            var model = new ConsultaCiecViewModel
+            {
+                Rfc = request.Rfc.Trim(),
+                Authorization = request.Authorization.Trim(),
+                Ciec = request.Ciec.Trim()
+            };
+
+            var resultado = await _opinion_service.DescargarOpinionCiecAsync(model);
+
+            if (resultado.Success && resultado.PdfData != null)
+                return Json(new { success = true, pdfBase64 = Convert.ToBase64String(resultado.PdfData), fileName = resultado.FileName ?? "OpinionDeCumplimiento.pdf", contentType = resultado.ContentType ?? "application/pdf" });
+
+            return Json(new { success = false, error = resultado.Error ?? resultado.Message ?? "Error desconocido" });
+        }
+
+        // -------------------------------------------------------------------------
+        // FIEL — CSF
+        // -------------------------------------------------------------------------
+
         [HttpPost]
         public async Task<IActionResult> DescargarCsfAjax(ConsultaSatViewModel model)
         {
-            // Validar campos FIEL
-            if (string.IsNullOrEmpty(model.Rfc) || 
-                string.IsNullOrEmpty(model.Authorization) || 
-                string.IsNullOrEmpty(model.Contrasena))
-            {
+            if (string.IsNullOrEmpty(model.Rfc) || string.IsNullOrEmpty(model.Authorization) || string.IsNullOrEmpty(model.Contrasena))
                 return Json(new { success = false, error = "Por favor complete todos los campos FIEL requeridos" });
-            }
 
             if (model.LlavePrivada == null || model.Certificado == null)
-            {
                 return Json(new { success = false, error = "Los archivos de llave privada y certificado son requeridos" });
-            }
 
-            // Crear modelo
             var csf_model = new OpinionCumplimientoViewModel
             {
                 Rfc = model.Rfc,
@@ -170,38 +215,47 @@ namespace SatGoCliente.Controllers
             var resultado = await _csf_service.DescargarCsfAsync(csf_model);
 
             if (resultado.Success && resultado.PdfData != null)
-            {
-                // Devolver PDF como base64 para descarga en cliente
-                var base64 = Convert.ToBase64String(resultado.PdfData);
-                return Json(new { 
-                    success = true, 
-                    pdfBase64 = base64,
-                    fileName = resultado.FileName ?? "ConstanciaSituacionFiscal.pdf",
-                    contentType = resultado.ContentType ?? "application/pdf"
-                });
-            }
-            else
-            {
-                return Json(new { 
-                    success = false, 
-                    error = resultado.Error ?? resultado.Message ?? "Error desconocido" 
-                });
-            }
+                return Json(new { success = true, pdfBase64 = Convert.ToBase64String(resultado.PdfData), fileName = resultado.FileName ?? "ConstanciaSituacionFiscal.pdf", contentType = resultado.ContentType ?? "application/pdf" });
+
+            return Json(new { success = false, error = resultado.Error ?? resultado.Message ?? "Error desconocido" });
         }
 
-        /// <summary>
-        /// Descarga la Opinión de Cumplimiento
-        /// </summary>
+        // -------------------------------------------------------------------------
+        // CIEC — CSF
+        // -------------------------------------------------------------------------
+
+        [HttpPost]
+        public async Task<IActionResult> DescargarCsfCiecAjax([FromBody] ConsultaCiecRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Rfc) || string.IsNullOrWhiteSpace(request.Authorization) || string.IsNullOrWhiteSpace(request.Ciec))
+                return Json(new { success = false, error = "RFC, token y clave CIEC son requeridos" });
+
+            var model = new ConsultaCiecViewModel
+            {
+                Rfc = request.Rfc.Trim(),
+                Authorization = request.Authorization.Trim(),
+                Ciec = request.Ciec.Trim()
+            };
+
+            var resultado = await _csf_service.DescargarCsfCiecAsync(model);
+
+            if (resultado.Success && resultado.PdfData != null)
+                return Json(new { success = true, pdfBase64 = Convert.ToBase64String(resultado.PdfData), fileName = resultado.FileName ?? "ConstanciaSituacionFiscal.pdf", contentType = resultado.ContentType ?? "application/pdf" });
+
+            return Json(new { success = false, error = resultado.Error ?? resultado.Message ?? "Error desconocido" });
+        }
+
+        // -------------------------------------------------------------------------
+        // FIEL — Descarga directa (form post legacy)
+        // -------------------------------------------------------------------------
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DescargarOpinion(ConsultaSatViewModel model)
         {
             model.ActiveTab = "opinion";
 
-            // Validar campos FIEL
-            if (string.IsNullOrEmpty(model.Rfc) || 
-                string.IsNullOrEmpty(model.Authorization) || 
-                string.IsNullOrEmpty(model.Contrasena))
+            if (string.IsNullOrEmpty(model.Rfc) || string.IsNullOrEmpty(model.Authorization) || string.IsNullOrEmpty(model.Contrasena))
             {
                 model.Error = "Por favor complete todos los campos FIEL requeridos";
                 return View("Index", model);
@@ -213,7 +267,6 @@ namespace SatGoCliente.Controllers
                 return View("Index", model);
             }
 
-            // Crear modelo de opinión
             var opinion_model = new OpinionCumplimientoViewModel
             {
                 Rfc = model.Rfc,
@@ -226,18 +279,188 @@ namespace SatGoCliente.Controllers
             var resultado = await _opinion_service.DescargarOpinionAsync(opinion_model);
 
             if (resultado.Success && resultado.PdfData != null)
-            {
-                return File(
-                    resultado.PdfData,
-                    resultado.ContentType ?? "application/pdf",
-                    resultado.FileName ?? "OpinionDeCumplimiento.pdf"
-                );
-            }
-            else
-            {
-                model.Error = resultado.Error ?? resultado.Message ?? "Error desconocido";
-                return View("Index", model);
-            }
+                return File(resultado.PdfData, resultado.ContentType ?? "application/pdf", resultado.FileName ?? "OpinionDeCumplimiento.pdf");
+
+            model.Error = resultado.Error ?? resultado.Message ?? "Error desconocido";
+            return View("Index", model);
         }
+
+        // -------------------------------------------------------------------------
+        // FIEL — Declaraciones
+        // -------------------------------------------------------------------------
+
+        [HttpPost]
+        public async Task<IActionResult> DescargarDecFielAjax(DeclaracionFielRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Rfc) || string.IsNullOrWhiteSpace(request.Authorization) || string.IsNullOrWhiteSpace(request.Contrasena))
+                return Json(new { success = false, error = "RFC, token y contraseña FIEL son requeridos" });
+
+            if (request.LlavePrivada == null || request.Certificado == null)
+                return Json(new { success = false, error = "Los archivos .key y .cer son requeridos" });
+
+            if (request.Ejercicio == 0)
+                return Json(new { success = false, error = "El ejercicio fiscal es requerido" });
+
+            var model = new DeclaracionFielViewModel
+            {
+                Rfc           = request.Rfc.Trim(),
+                Authorization = request.Authorization.Trim(),
+                Contrasena    = request.Contrasena,
+                LlavePrivada  = request.LlavePrivada,
+                Certificado   = request.Certificado,
+                Ejercicio     = request.Ejercicio,
+                Mes           = request.Mes,
+                TipoDocumento = request.TipoDocumento,
+                RequestId     = request.RequestId
+            };
+
+            var resultado = await _dec_service.DescargarDecFielAsync(model);
+
+            if (resultado.Success && resultado.FileData != null)
+                return Json(new { success = true, fileBase64 = Convert.ToBase64String(resultado.FileData), fileName = resultado.FileName ?? "declaracion.zip", contentType = resultado.ContentType ?? "application/zip", requestId = resultado.RequestId });
+
+            return Json(new { success = false, error = resultado.Error ?? resultado.Message ?? "Error desconocido" });
+        }
+
+        // -------------------------------------------------------------------------
+        // CIEC — Declaraciones
+        // -------------------------------------------------------------------------
+
+        [HttpPost]
+        public async Task<IActionResult> DescargarDecCiecAjax([FromBody] DeclaracionCiecRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Rfc) || string.IsNullOrWhiteSpace(request.Authorization) || string.IsNullOrWhiteSpace(request.Ciec))
+                return Json(new { success = false, error = "RFC, token y clave CIEC son requeridos" });
+
+            if (request.Ejercicio == 0)
+                return Json(new { success = false, error = "El ejercicio fiscal es requerido" });
+
+            var model = new DeclaracionCiecViewModel
+            {
+                Rfc           = request.Rfc.Trim(),
+                Authorization = request.Authorization.Trim(),
+                Ciec          = request.Ciec.Trim(),
+                Ejercicio     = request.Ejercicio,
+                Mes           = request.Mes,
+                RequestId     = request.RequestId
+            };
+
+            var resultado = await _dec_service.DescargarDecCiecAsync(model);
+
+            if (resultado.Success && resultado.FileData != null)
+                return Json(new { success = true, fileBase64 = Convert.ToBase64String(resultado.FileData), fileName = resultado.FileName ?? "declaracion.zip", contentType = resultado.ContentType ?? "application/zip", requestId = resultado.RequestId });
+
+            return Json(new { success = false, error = resultado.Error ?? resultado.Message ?? "Error desconocido" });
+        }
+
+        // -------------------------------------------------------------------------
+        // FIEL — Información Fiscal
+        // -------------------------------------------------------------------------
+
+        [HttpPost]
+        public async Task<IActionResult> ConsultarInfoFiscalFielAjax(InfoFiscalFielRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Rfc) || string.IsNullOrWhiteSpace(request.Authorization) || string.IsNullOrWhiteSpace(request.Contrasena))
+                return Json(new { success = false, error = "RFC, token y contraseña FIEL son requeridos" });
+
+            if (request.LlavePrivada == null || request.Certificado == null)
+                return Json(new { success = false, error = "Los archivos .key y .cer son requeridos" });
+
+            var model = new InfoFiscalFielViewModel
+            {
+                Rfc           = request.Rfc.Trim(),
+                Authorization = request.Authorization.Trim(),
+                Contrasena    = request.Contrasena,
+                LlavePrivada  = request.LlavePrivada,
+                Certificado   = request.Certificado,
+                RequestId     = request.RequestId
+            };
+
+            var resultado = await _info_fiscal_service.ConsultarFielAsync(model);
+            return Json(new { success = resultado.Success, data = resultado.Data, message = resultado.Message, error = resultado.Error, requestId = resultado.RequestId });
+        }
+
+        // -------------------------------------------------------------------------
+        // CIEC — Información Fiscal
+        // -------------------------------------------------------------------------
+
+        [HttpPost]
+        public async Task<IActionResult> ConsultarInfoFiscalCiecAjax([FromBody] InfoFiscalCiecRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request?.Rfc) || string.IsNullOrWhiteSpace(request.Authorization) || string.IsNullOrWhiteSpace(request.Ciec))
+                return Json(new { success = false, error = "RFC, token y clave CIEC son requeridos" });
+
+            var model = new InfoFiscalCiecViewModel
+            {
+                Rfc           = request.Rfc.Trim(),
+                Authorization = request.Authorization.Trim(),
+                Ciec          = request.Ciec.Trim(),
+                RequestId     = request.RequestId
+            };
+
+            var resultado = await _info_fiscal_service.ConsultarCiecAsync(model);
+            return Json(new { success = resultado.Success, data = resultado.Data, message = resultado.Message, error = resultado.Error, requestId = resultado.RequestId });
+        }
+    }
+
+    // DTO para peticiones de Declaraciones FIEL (multipart)
+    public class DeclaracionFielRequest
+    {
+        public string? Rfc { get; set; }
+        public string? Authorization { get; set; }
+        public string? Contrasena { get; set; }
+        public IFormFile? LlavePrivada { get; set; }
+        public IFormFile? Certificado { get; set; }
+        public int Ejercicio { get; set; } = DateTime.Today.Year;
+        public int Mes { get; set; }
+        public string TipoDocumento { get; set; } = "declaracion";
+        public string? RequestId { get; set; }
+    }
+
+    // DTO para peticiones de Declaraciones CIEC (JSON body)
+    public class DeclaracionCiecRequest
+    {
+        public string? Rfc { get; set; }
+        public string? Authorization { get; set; }
+        public string? Ciec { get; set; }
+        public int Ejercicio { get; set; } = DateTime.Today.Year;
+        public int Mes { get; set; }
+        public string? RequestId { get; set; }
+    }
+
+    // DTO para peticiones de Información Fiscal FIEL (multipart)
+    public class InfoFiscalFielRequest
+    {
+        public string? Rfc { get; set; }
+        public string? Authorization { get; set; }
+        public string? Contrasena { get; set; }
+        public IFormFile? LlavePrivada { get; set; }
+        public IFormFile? Certificado { get; set; }
+        public string? RequestId { get; set; }
+    }
+
+    // DTO para peticiones de Información Fiscal CIEC (JSON body)
+    public class InfoFiscalCiecRequest
+    {
+        public string? Rfc { get; set; }
+        public string? Authorization { get; set; }
+        public string? Ciec { get; set; }
+        public string? RequestId { get; set; }
+    }
+
+    // DTO para peticiones CIEC (JSON body)
+    public class ConsultaCiecRequest
+    {
+        public string? Rfc { get; set; }
+        public string? Authorization { get; set; }
+        public string? Ciec { get; set; }
+        public string? Tipo { get; set; }
+        public int TipoBusqueda { get; set; } = 1;
+        public int EstatusFactura { get; set; } = -1;
+        public string? Anio { get; set; }
+        public string? Mes { get; set; }
+        public string? Dia { get; set; }
+        public string? Uuid { get; set; }
+        public string? RequestId { get; set; }
     }
 }

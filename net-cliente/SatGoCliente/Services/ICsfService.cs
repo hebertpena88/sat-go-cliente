@@ -3,17 +3,12 @@ using SatGoCliente.Models;
 
 namespace SatGoCliente.Services
 {
-    /// <summary>
-    /// Interface para el servicio de Constancia de Situación Fiscal
-    /// </summary>
     public interface ICsfService
     {
         Task<CsfResponse> DescargarCsfAsync(OpinionCumplimientoViewModel model);
+        Task<CsfResponse> DescargarCsfCiecAsync(ConsultaCiecViewModel model);
     }
 
-    /// <summary>
-    /// Respuesta del servicio de CSF
-    /// </summary>
     public class CsfResponse
     {
         public bool Success { get; set; }

@@ -6,10 +6,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Log store en memoria (singleton compartido entre servicios)
+builder.Services.AddSingleton<ILogStore, LogStore>();
+
 // Registrar HttpClient y servicios
 builder.Services.AddHttpClient<IFacturaService, FacturaService>();
 builder.Services.AddHttpClient<IOpinionCumplimientoService, OpinionCumplimientoService>();
 builder.Services.AddHttpClient<ICsfService, CsfService>();
+builder.Services.AddHttpClient<IAuthService, AuthService>();
+builder.Services.AddHttpClient<IDeclaracionService, DeclaracionService>();
+builder.Services.AddHttpClient<IInfoFiscalService, InfoFiscalService>();
 
 var app = builder.Build();
 
