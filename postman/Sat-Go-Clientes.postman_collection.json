@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "0f97dd0a-8436-4c0f-9041-bbcde3f31ad5",
+    "_postman_id": "ef362c84-fee0-4ac9-a972-b5945a9a91ed",
     "name": "Sat-Go-Clientes",
     "description": "Hola!, muchas gracias por descargar esta colección para utilizar nuestra API SAT-GO, aquí encontrarás todo lo necesario para conectarte a nuestros servicios, desde crear tu KEY, tokens y hasta descargar comprobantes, constancias y opiniones. Si tienes alguna duda o comentario no dudes en enviarnos un mensaje por whatsapp al +52 998 195 7130 y con gusto te atenderemos para resolver cualquier tema.\n\nPara poder consumir los servicios de SAT-GO es indispensable tener al menos los siguientes pasos:\n\n- Estar registrado en [<i>https://web.sat-go.com</i>](https://web.sat-go.com)\n    \n- Haber ejecutado el **paso 1** para crear tu llave\n    \n- Obtener un token con la llave creada en el **paso 1**\n    \n\nUna vez que tengas tu llave y tu token puedes utilizar todos nuestros endpoints que están del lado izquierdo de la colección.\n\n**IMPORTANTE**: Cada folder de esta colección contiene instrucciones de ayuda para que puedas consumir de forma correcta nuestra API.\n\nMuchas gracias por tu confianza y recuerda que estamos a tus órdenes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -368,7 +368,7 @@
               "raw": ""
             },
             "url": {
-              "raw": "https://api.sat-go.com/api/v2/Consultar/fac?tipo=recibidos&tipoBusqueda=1&estatusFactura=-1&mes=1&anio=2025",
+              "raw": "https://api.sat-go.com/api/v2/Consultar/fac?tipo=recibidos&tipoBusqueda=1&estatusFactura=-1&mes=1&anio=2025&descargaPdfs=true",
               "protocol": "https",
               "host": [
                 "api",
@@ -411,6 +411,11 @@
                   "key": "anio",
                   "value": "2025",
                   "description": "Año"
+                },
+                {
+                  "key": "descargaPdfs",
+                  "value": "true",
+                  "type": "text"
                 }
               ]
             },
@@ -495,7 +500,7 @@
               ]
             },
             "url": {
-              "raw": "https://api.sat-go.com/api/v2/Consultar/facfiel?tipoBusqueda=1&estatusFactura=-1&requestId=eb7bba2a-26b2-4599-830e-445682ed2b4b&fecha_inicial=2025-01-01 00:00:00&fecha_final=2025-01-07 23:59:59&tipo=recibidos&solicitaMetadata=false&descargaComprobantes=true",
+              "raw": "https://api.sat-go.com/api/v2/Consultar/facfiel?tipoBusqueda=1&estatusFactura=-1&requestId=eb7bba2a-26b2-4599-830e-445682ed2b4b&fecha_inicial=2025-01-01 00:00:00&fecha_final=2025-01-07 23:59:59&tipo=recibidos&solicitaMetadata=false&descargaComprobantes=true&descargaPdfs=false",
               "protocol": "https",
               "host": [
                 "api",
@@ -550,6 +555,19 @@
                 {
                   "key": "uuid",
                   "value": "7EB73EF9-1232-4A5E-AF5F-2B52D6C963F8",
+                  "disabled": true
+                },
+                {
+                  "key": "descargaPdfs",
+                  "value": "false",
+                  "description": "Permite descargar el PDF del SAT, se recomienda usarse descargando por UUID debido a lo pesado que es y puede derivar en timeouts para consultas grandes.",
+                  "type": "text"
+                },
+                {
+                  "key": "tipoComprobante",
+                  "value": null,
+                  "description": " Todos, Estandar, RecepcionPagos, CartaPorte, CartaPorte20, CartaPorte30, CartaPorte31, ComercioExterior, ComercioExterior11, ComercioExterior20, Aerolineas, ReciboPagoSalarios, ReciboPagoSalarios12, ConsumoCombustibles, ConsumoCombustibles11, EstadoCuentaBancario, EstadoCuentaCombustibles12, EstadoCuentaCombustiblesMonederos, GastosHidrocarburos, IngresosHidrocarburos, HidrocarburosPetroliferos, INE11, TimbreFiscalDigital, Donatarias, ReciboDonativos, InstitucionesEducativas, LeyendasFiscales, MisCuentas, NotariosPublicos, ObrasArtesAntiguedades, OtrosDerechosImpuestos, PagoEnEspecie, PersonaFisicaCoordinado, SPEI, Terceros, TercerosAlt, SectorVentasDetalle, ServiciosConstruccion, SustitucionRenovacionVehicular, CertificadoDestruccion, AcreditamientoIEPS, CompraVentaDivisas, TuristaPasajeroExtranjero, ValesDespensa, VehiculoUsado, VentaVehiculos, RecepcionPagosAlt",
+                  "type": "text",
                   "disabled": true
                 }
               ]
@@ -1188,6 +1206,91 @@
             "description": "Get CSF using the stored captcha"
           },
           "response": []
+        },
+        {
+          "name": "Validar OC",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": true
+              },
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "mul",
+                "type": "text",
+                "disabled": true
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "Pdf",
+                  "description": "certificado",
+                  "type": "file",
+                  "uuid": "870f884c-98bf-414f-901e-c9131ce92652",
+                  "value": null
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Consultar/oc/validar-pdf",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Consultar",
+                "oc",
+                "validar-pdf"
+              ]
+            },
+            "description": "Valida una opinión de cumplimiento con los datos del PDF"
+          },
+          "response": []
         }
       ],
       "description": "Esta carpeta contiene endpoints para obtener la Opinión de Cumplimiento del SAT utilizando dos métodos de autenticación. Es importante mencionar que debes haber ejecutado **Genera Token / Obtener Token** para que puedas utilizar la descarga de opinión de cumplimiento.\n\nEndpoints incluidos:\n\n- Obtener Opinión CIEC: Realiza una consulta usando las credenciales CIEC previamente almacenadas.\n    \n- Obtener Opinión FIEL: Realiza una consulta usando la FIEL previamente almacenada.\n    \n- Obtener Opinión Público: Descarga la opinión de cumplimiento sin la necesidad de utilizar CIEC o e.firma, para esto el usuario debe tener habilitado el permiso de consulta de opinión de cumplimiento.\n    \n\nVariables necesarias (collección):\n\n- RFCliente\n    \n- CIecCliente (Cuando se utiliza la descarga por CIEC)\n    \n- PassFielCliente (Cuando se utiliza la descarga por FIEL\n    \n\nInstrucciones de uso:\n\n1. Para descarga por medio de CIEC, ingresa a **Obtener Opinión CIEC** da click en **Headers** y actualiza las variables **RFCCliente y CIecCliente,** posteriormente da click en el botón **SEND**\n    \n\n<img src=\"https://content.pstmn.io/e4e5bb81-76ca-41be-bdbb-c722c589f9d7/aW1hZ2UucG5n\" width=\"1204\" height=\"587\">\n\n2\\. Para descarga por medio de FIEL, ingresa a **Obtener Opinión FIEL** da click en **Headers** y actualiza la variable **RFCCliente,** posteriormente da click en **Body** y agrega en el parámetro **llavePrivada** tu archivo .key, en el parámetro **Certificado** agrega tu archivo .cer de la FIEL y por último actualiza la variable **PassFielCliente** el cual es la contraseña de tu llave privada.\n\n<img src=\"https://content.pstmn.io/4d09f381-2f60-4cef-aa17-e4f0e2516cdf/aW1hZ2UucG5n\" width=\"1240\" height=\"687\">"
@@ -1255,7 +1358,7 @@
               "raw": ""
             },
             "url": {
-              "raw": "https://api.sat-go.com/api/v2/Consultar/dec?ejercicio=2025&mes=4",
+              "raw": "https://api.sat-go.com/api/v2/Consultar/dec?ejercicio=2025&mes=4&tipoDocumento=declaracion",
               "protocol": "https",
               "host": [
                 "api",
@@ -1271,16 +1374,25 @@
               "query": [
                 {
                   "key": "ejercicio",
-                  "value": "2025"
+                  "value": "2025",
+                  "description": "Año Fiscal"
                 },
                 {
                   "key": "mes",
-                  "value": "4"
+                  "value": "4",
+                  "description": "Mes 1-12 ó 0 para todo el año"
                 },
                 {
                   "key": "requestId",
                   "value": "0cec56ff-c625-48bf-bf7e-510cc160a744",
+                  "description": "Valor del response header X-RequestId de la primer llamada",
                   "disabled": true
+                },
+                {
+                  "key": "tipoDocumento",
+                  "value": "declaracion",
+                  "description": "declaracion o pago",
+                  "type": "text"
                 }
               ]
             },
@@ -1365,7 +1477,7 @@
               ]
             },
             "url": {
-              "raw": "https://api.sat-go.com/api/v2/Consultar/decfiel?ejercicio=2025&mes=2",
+              "raw": "https://api.sat-go.com/api/v2/Consultar/decfiel?ejercicio=2025&mes=2&tipoDocumento=declaracion",
               "protocol": "https",
               "host": [
                 "api",
@@ -1381,21 +1493,24 @@
               "query": [
                 {
                   "key": "ejercicio",
-                  "value": "2025"
+                  "value": "2025",
+                  "description": "Año fiscal"
                 },
                 {
                   "key": "mes",
-                  "value": "2"
+                  "value": "2",
+                  "description": "Mes 1-12 ó 0 para todo el año"
                 },
                 {
                   "key": "requestId",
-                  "value": "8d7dfc3e-28d4-4ccb-9e6b-579ff669d6e5",
+                  "value": "",
+                  "description": "Valor del response header X-RequestId de la primer llamada",
                   "disabled": true
                 },
                 {
-                  "key": "fecha_inicial",
-                  "value": "2025-01-01 00:00:00",
-                  "disabled": true
+                  "key": "tipoDocumento",
+                  "value": "declaracion",
+                  "description": "declaracion o pago"
                 }
               ]
             },
