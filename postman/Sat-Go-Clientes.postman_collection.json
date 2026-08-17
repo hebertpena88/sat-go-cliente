@@ -122,6 +122,54 @@
             "description": "Get a new captcha from the SAT API"
           },
           "response": []
+        },
+        {
+          "name": "Obtener Token (Query Param)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "pm.collectionVariables.set(\"tokenCliente\", jsonData.token);",
+                  "console.log(\"Stored Token: \" + jsonData.token);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/Auth/token?key={{KeyValue}}",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "Auth",
+                "token"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "{{KeyValue}}",
+                  "description": "API Key generada con /api/v1/Users/Createkey"
+                }
+              ]
+            },
+            "description": "Variante de /token-json que recibe la KEY como query param en lugar de body JSON."
+          },
+          "response": []
         }
       ],
       "description": "Para poder generar un token dinámico, el requisito es haber ejecutado de forma correcta el **Paso 1 ,** una vez ejecutado, da click en _**Genera Token / Obtener Token**_ _y presiona el botón_ _**Send**____, como el valor de la_ _**KEY**_ _ya está almacenada en una variable, en automático deberá desplegarte un_ _**token**_ _como se muestra en la imagen siguiente:_\n\n<img src=\"https://content.pstmn.io/3d0f0e7b-ec1b-4455-b8d5-48e2779cf516/aW1hZ2UucG5n\" width=\"1375\" height=\"835\">"
@@ -1391,7 +1439,7 @@
                 {
                   "key": "tipoDocumento",
                   "value": "declaracion",
-                  "description": "declaracion o pago",
+                  "description": "declaracion | pago | acuse",
                   "type": "text"
                 }
               ]
@@ -1510,7 +1558,7 @@
                 {
                   "key": "tipoDocumento",
                   "value": "declaracion",
-                  "description": "declaracion o pago"
+                  "description": "declaracion | pago | acuse"
                 }
               ]
             },
@@ -2249,6 +2297,342 @@
             "description": "Get CSF using the stored captcha"
           },
           "response": []
+        },
+        {
+          "name": "Solicita Folio",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/SatWebService/solicita-folio?folio=6dc309b6-dc22-476f-b675-e4396667fd6b",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "SatWebService",
+                "solicita-folio"
+              ],
+              "query": [
+                {
+                  "key": "folio",
+                  "value": "6dc309b6-dc22-476f-b675-e4396667fd6b",
+                  "description": "Folio Fiscal (UUID) del CFDI a solicitar"
+                }
+              ]
+            },
+            "description": "Solicita la descarga de un CFDI específico por su Folio Fiscal (UUID), sin necesidad de acotar por rango de fechas. Alternativa a Solicita. La respuesta se usa igual que en el flujo normal: guarda el idSolicitud y continúa con Verifica y Descarga."
+          },
+          "response": []
+        },
+        {
+          "name": "Consulta CFDI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/SatWebService/consulta-cfdi?re=XAXX010101000&rr=GODE561231GR8&tt=1234.560000&id=6128396f-c09b-4ec6-8699-43c5d7743b8f&fe=Ax2f8vQ2",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "SatWebService",
+                "consulta-cfdi"
+              ],
+              "query": [
+                {
+                  "key": "re",
+                  "value": "XAXX010101000",
+                  "description": "RFC del emisor"
+                },
+                {
+                  "key": "rr",
+                  "value": "GODE561231GR8",
+                  "description": "RFC del receptor"
+                },
+                {
+                  "key": "tt",
+                  "value": "1234.560000",
+                  "description": "Total del CFDI con 6 decimales"
+                },
+                {
+                  "key": "id",
+                  "value": "6128396f-c09b-4ec6-8699-43c5d7743b8f",
+                  "description": "UUID / Folio Fiscal del CFDI"
+                },
+                {
+                  "key": "fe",
+                  "value": "Ax2f8vQ2",
+                  "description": "Primeros 8 caracteres del sello digital (requerido en CFDI 4.0)"
+                }
+              ]
+            },
+            "description": "Consulta el estado (Vigente/Cancelado) de un CFDI directo contra el servicio SOAP de consulta del SAT. No requiere FIEL, solo el token y el header RFC."
+          },
+          "response": []
+        },
+        {
+          "name": "Peticiones Pendientes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/SatWebService/peticiones-pendientes",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "SatWebService",
+                "peticiones-pendientes"
+              ]
+            },
+            "description": "Consulta, vía el WS de Cancelación de SIFEI, las solicitudes de cancelación pendientes de aceptar/rechazar para los CFDI emitidos por el RFC del header. No requiere FIEL. El uuid devuelto se usa en Procesar Respuesta."
+          },
+          "response": []
+        },
+        {
+          "name": "Procesar Respuesta",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {}
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "RFC",
+                "value": "{{RFCCliente}}",
+                "type": "text"
+              },
+              {
+                "key": "Accept",
+                "value": "*/*",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "llavePrivada",
+                  "description": "llave privada del receptor",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Certificado",
+                  "description": "certificado del receptor",
+                  "type": "file",
+                  "value": null
+                },
+                {
+                  "key": "Contrasena",
+                  "value": "{{PassFielCliente}}",
+                  "description": "Password de la fiel del receptor (se reutiliza como contraseña ante SIFEI)",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/SatWebService/procesar-respuesta?uuid=6dc309b6-dc22-476f-b675-e4396667fd6b&respuesta=Aceptacion",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "SatWebService",
+                "procesar-respuesta"
+              ],
+              "query": [
+                {
+                  "key": "uuid",
+                  "value": "6dc309b6-dc22-476f-b675-e4396667fd6b",
+                  "description": "UUID de la solicitud de cancelación a responder, obtenido de Peticiones Pendientes"
+                },
+                {
+                  "key": "respuesta",
+                  "value": "Aceptacion",
+                  "description": "Aceptacion (sin acento) | Rechazo"
+                }
+              ]
+            },
+            "description": "Acepta o rechaza una solicitud de cancelación pendiente, vía el WS de Cancelación de SIFEI. Requiere la FIEL del receptor (el RFC receptor se toma del header RFC)."
+          },
+          "response": []
         }
       ],
       "description": "Para poder descargar tus comprobantes primero debiste haber ejecutado el **Genera Token** de esta colección, cuando hayas ejecutado correctamente el **Genera Token** ya estás listo para descargar tus comprobantes por medio del WS del SAT.  \nLos siguientes pasos te ayudarán a consumir el servicio de forma correcta:\n\n#### SOLICITUD\n\n1. Asegúrate de haber cargado tus archivos FIEL y la contraseña de la misma para que puedas autenticarte.\n    \n\n<img src=\"https://content.pstmn.io/120324de-72ee-489b-b328-aa4eb2a89073/aW1hZ2UucG5n\" width=\"463\" height=\"205\">\n\n2\\. De igual forma en la pestaña Header ingresa el RFC del cual vas a generar la petición.\n\n<img src=\"https://content.pstmn.io/77c27e99-74a2-467a-9de9-0e44e45c6c8c/aW1hZ2UucG5n\" width=\"369\" height=\"165\">\n\n3\\. En los parámetros ingresa la siguiente información:\n\n- fecha_inicial\n    \n- fecha_final\n    \n- tipo -> emitidos o recibidos\n    \n- tipoBusqueda -> CFDI o Metadata\n    \n\n<img src=\"https://content.pstmn.io/aca99296-305a-4b3b-bf02-8a4cba0fda0b/aW1hZ2UucG5n\" width=\"437\" height=\"190\">\n\n4\\. Presiona el botón de SEND y deberias ver algo como esto:\n\n<img src=\"https://content.pstmn.io/70a05e9f-f198-4c01-b7f9-ddb0ef178218/aW1hZ2UucG5n\" width=\"363\" height=\"188\">\n\nEl idSolicitud deberás almacenarlo ya que se usará en el siguiente endpoint **VERIFICA**\n\n#### VERIFICA\n\nEste endpoint se encarga de revisar con el SAT el estado de tu solicitud, deberás preguntar hasta que obtengas un status = 3 y un paqueteId\n\n1. Los pasos 1 y 2 de SOLICITA aplican aqui tambien.\n    \n2. Ingresa el parámetro IdSolicitud y pega el resultado de SOLICITA dentro del atributo idSolicitud\n    \n\n<img src=\"https://content.pstmn.io/506752af-9e11-4bb8-aa3b-ad54f5ef770a/aW1hZ2UucG5n\" width=\"379\" height=\"118\">\n\nCuando esté listo tu paquete verás un estadoSolicitud = 3 y un listado de paquetes, puede ser 1 o más, de lo contrario verás un estadoSolicitud = 1 o 2 lo cual significa que está en proceso.\n\n<img src=\"https://content.pstmn.io/c3123fe4-ce17-438c-9220-fbb431f8d47a/aW1hZ2UucG5n\" width=\"349\" height=\"211\">\n\nDESCARGA\n\nEste endpoint se encarga de descargar los paquetes obtenidos en el paso VERIFICA.\n\n1. Los pasos 1 y de de SOLICITA aplican aquí tambien.\n    \n2. Ingresa el parámetro IdPaquete que obtuviste en el endpoint VERIFICA y da click en SEND\n    \n\n<img src=\"https://content.pstmn.io/a7975ece-4576-472b-8dea-757cabe66186/aW1hZ2UucG5n\" width=\"387\" height=\"160\">\n\nDeberás ver el archivo zip en base64, este lo debes tratar como un archivo zip.\n\n<img src=\"https://content.pstmn.io/8ce534ff-2bf0-4f91-8994-68ac7d6f55be/aW1hZ2UucG5n\" alt=\"\" height=\"289\" width=\"385\">"
@@ -2435,6 +2819,679 @@
         }
       ],
       "description": "Para poder descargar tu información fiscal del SAT primero debiste haber ejecutado **Genera Token** de esta colección, cuando hayas ejecutado correctamente **Genera Token** ya estás listo para descargar ttus notificaciones, puedes hacerlo de 2 formas diferentes:\n\n- Utilizando la FIEL.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Información Fiscal FIEL** dar click en **Headers** y actualizar la variable **RFCCliente**, despues da click en B**ody** y en el parámetro **llavePrivada** sube tu archivo key del SAT y donde dice **Certificado** sube tu certificado del SAT, por último actualiza la variable **PassFielCliente** con la contraseña de la llave privada.\n        \n\n<img src=\"https://content.pstmn.io/7dda6342-6248-4e45-8632-ef10a2aec822/aW1hZ2UucG5n\" width=\"1240\" height=\"775\">\n\n- Utilizando la CIEC.\n    \n    - Aquí de igual forma debes ejecutar correctamente **Obtener Token,** una vez que está ejecutado, debes dar click en **Obtener Información Fiscal CIEC** dar click en **Headers** y actualizar la variable **RFCCliente y CiecCliente** despues da click SEND\n        \n\n<img src=\"https://content.pstmn.io/43e84eb3-b0cc-4972-8684-fb16e974af66/aW1hZ2UucG5n\" alt=\"\" height=\"822\" width=\"1529\">"
+    },
+    {
+      "name": "Datos Fiscales",
+      "item": [
+        {
+          "name": "Obtener Datos Fiscales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/Users/fiscal-data",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "Users",
+                "fiscal-data"
+              ]
+            },
+            "description": "Obtiene los datos fiscales guardados del usuario autenticado (RFC, razón social, código postal, régimen fiscal, email de facturación)."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar Datos Fiscales",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"rfc\": \"{{RFCCliente}}\",\r\n    \"razonSocial\": \"Mi Empresa SA de CV\",\r\n    \"codigoPostal\": \"06600\",\r\n    \"regimenFiscal\": \"612\",\r\n    \"emailFacturacion\": \"facturacion@miempresa.com\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/Users/fiscal-data",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "Users",
+                "fiscal-data"
+              ]
+            },
+            "description": "Guarda o actualiza los datos fiscales del usuario autenticado. Devuelve el objeto actualizado."
+          },
+          "response": []
+        }
+      ],
+      "description": "Datos fiscales (RFC, razón social, código postal, régimen fiscal, correo de facturación) asociados a tu cuenta SatGo. Estos datos alimentan la generación de CFDI de tus pagos de suscripción y se guardan/consultan con tu token de autenticación, no requieren el header RFC ni CIEC/FIEL."
+    },
+    {
+      "name": "REPSE",
+      "item": [
+        {
+          "name": "Consultar Razon Social REPSE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v2/Repse/consultar/razon-social-directo?razonSocial=ACME",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "Repse",
+                "consultar",
+                "razon-social-directo"
+              ],
+              "query": [
+                {
+                  "key": "razonSocial",
+                  "value": "ACME",
+                  "description": "Nombre o razón social a buscar (mínimo 3 caracteres)"
+                }
+              ]
+            },
+            "description": "Busca la razón social en el padrón público REPSE (STPS) y devuelve, en una sola respuesta síncrona, los candidatos encontrados y el detalle de registro (folio, RFC, vigencia, actividades) de cada uno."
+          },
+          "response": []
+        }
+      ],
+      "description": "Consulta directa y síncrona contra el Padrón Público REPSE (STPS) por razón social. Solo requiere el token de autenticación, no necesita CIEC ni FIEL."
+    },
+    {
+      "name": "BYOK - Proveedor de Secretos (Azure Key Vault)",
+      "item": [
+        {
+          "name": "Identity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/identity",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "identity"
+              ]
+            },
+            "description": "Devuelve las opciones de configuración disponibles para BYOK: CrossTenant (tu propio Key Vault) y SatGoManaged (vault gestionado por SatGo)."
+          },
+          "response": []
+        },
+        {
+          "name": "Registrar Secreto CIEC (CrossTenant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"rfc\": \"{{RFCCliente}}\",\r\n    \"providerType\": \"AzureKeyVault\",\r\n    \"providerUri\": \"https://mi-vault.vault.azure.net/\",\r\n    \"secretName\": \"ciec-{{RFCCliente}}\",\r\n    \"providerOptions\": \"{\\\"tenantId\\\":\\\"<tu-tenant-id>\\\"}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/secret/register",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "secret",
+                "register"
+              ]
+            },
+            "description": "Registra la referencia a la CIEC en tu propio Azure Key Vault (CrossTenant). SatGo solo guarda la URI y el nombre del secreto, nunca el valor."
+          },
+          "response": []
+        },
+        {
+          "name": "Guardar Secreto CIEC (SatGoManaged)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"rfc\": \"{{RFCCliente}}\",\r\n    \"secretValue\": \"{{CIecCliente}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/secret/store",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "secret",
+                "store"
+              ]
+            },
+            "description": "Guarda la CIEC cifrada en el vault gestionado por SatGo (SatGoManaged). El valor nunca se devuelve en ninguna respuesta posterior."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar Proveedor de Secreto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/{{RFCCliente}}",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "{{RFCCliente}}"
+              ]
+            },
+            "description": "Elimina el proveedor de secretos (CIEC) de un RFC. Si era SatGoManaged, también elimina el secreto del vault de SatGo."
+          },
+          "response": []
+        },
+        {
+          "name": "Estado del Proveedor de Secreto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/{{RFCCliente}}/status",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "{{RFCCliente}}",
+                "status"
+              ]
+            },
+            "description": "Consulta el estado del proveedor de secretos (CIEC) de un RFC."
+          },
+          "response": []
+        },
+        {
+          "name": "Registrar Llave FIEL (CrossTenant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"rfc\": \"{{RFCCliente}}\",\r\n    \"providerType\": \"AzureKeyVault\",\r\n    \"providerUri\": \"https://mi-vault.vault.azure.net/\",\r\n    \"keyName\": \"fiel-rsa-{{RFCCliente}}\",\r\n    \"keyOptions\": \"{\\\"tenantId\\\":\\\"<tu-tenant-id>\\\"}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/signing-key/register",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "signing-key",
+                "register"
+              ]
+            },
+            "description": "Registra la llave RSA de la FIEL en tu propio Azure Key Vault (CrossTenant). Requiere el rol 'Key Vault Crypto User' para SatGo. Futuras peticiones solo necesitan el .cer."
+          },
+          "response": []
+        },
+        {
+          "name": "Importar Llave FIEL (SatGoManaged)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"rfc\": \"{{RFCCliente}}\",\r\n    \"cerFileBase64\": \"<bytes del .cer en base64>\",\r\n    \"keyFileBase64\": \"<bytes del .key PKCS#8 en base64>\",\r\n    \"password\": \"{{PassFielCliente}}\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/signing-key/store",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "signing-key",
+                "store"
+              ]
+            },
+            "description": "Importa la FIEL (.cer + .key en base64) al vault gestionado por SatGo (SatGoManaged). SatGo genera un PKCS12 y lo importa en su vault; futuras peticiones solo necesitan el .cer."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar Proveedor de Firma",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/signing-key/{{RFCCliente}}",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "signing-key",
+                "{{RFCCliente}}"
+              ]
+            },
+            "description": "Elimina el proveedor de firma (FIEL) de un RFC. Si era SatGoManaged, también elimina la llave del vault de SatGo."
+          },
+          "response": []
+        },
+        {
+          "name": "Estado del Proveedor de Firma",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://api.sat-go.com/api/v1/SecretProvider/signing-key/{{RFCCliente}}/status",
+              "protocol": "https",
+              "host": [
+                "api",
+                "sat-go",
+                "com"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "SecretProvider",
+                "signing-key",
+                "{{RFCCliente}}",
+                "status"
+              ]
+            },
+            "description": "Consulta el estado del proveedor de firma (FIEL) de un RFC."
+          },
+          "response": []
+        }
+      ],
+      "description": "BYOK (Bring Your Own Key): guarda tu CIEC y/o la llave de tu FIEL en un Key Vault propio (CrossTenant) o en el vault gestionado por SatGo (SatGoManaged). Una vez configurado, los endpoints de Consultar/SatWebService ya no requieren el header Secret ni subir los archivos de la FIEL en cada llamada. Ve a **Identity** primero para ver las opciones disponibles. Guía paso a paso: https://sat-go.com/guia-azure-keyvault"
     }
   ],
   "event": [
